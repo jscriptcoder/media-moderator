@@ -1,0 +1,10 @@
+<div class="list-group">
+    <a href="#"
+       class="list-group-item"
+       ng-repeat="item in status.list"
+       ng-click="status.statusClick($event, $index)"
+       ng-class="{active: $index == status.selected}">
+        <span class="badge">{{item.Count}}</span>
+        {{item.Status.Name}}
+    </a>
+</div>

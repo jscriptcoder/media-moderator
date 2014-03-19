@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>.. Media Moderator Tool ::..</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="build/css/main.css">
+        <!--<link rel="stylesheet" href="dist/styles.min.css">-->
+
+    </head>
+    <body>
+
+        <div class="container" role="main">
+            <div ng-include="'template/main.html'"></div>
+        </div>
+
+        <!-- Moderation tool templates -->
+        <script type="text/ng-template" id="template/main.html">
+            <div class="main" role="main" ng-controller="mainCtrl">
+
+                <tabset>
+
+                    <tab heading="Media">
+
+                        <div ng-include="'template/media.html'"></div>
+
+                    </tab>
+                    <tab heading="Users">
+
+                        <div ng-include="'template/users.html'"></div>
+
+                    </tab>
+
+                </tabset>
+
+            </div>
+        </script>
+
+        <script type="text/ng-template" id="template/mt-status-list.html">
+            <div class="list-group">
+                <a href="#"
+                   class="list-group-item"
+                   ng-repeat="item in status.list"
+                   ng-click="status.statusClick($event, $index)"
+                   ng-class="{active: $index == status.selected}">
+                    <span class="badge">{{item.Count}}</span>
+                    {{item.Status.Name}}
+                </a>
+            </div>
+        </script>
+
+        <script type="text/ng-template" id="template/media.html">
+            <div class="media">
+
+                <h1>
+                    <span class="glyphicon glyphicon-camera"></span>
+                    Media
+                </h1>
+
+                <div class="row">
+                    <div class="col-sm-3 col-md-4">
+
+                        <mt-status-list></mt-status-list>
+
+                    </div>
+                    <div class="col-sm-9 col-md-8">
+
+                        <div class="panel panel-primary">
+                            <div class="panel-body">
+
+                                <mt-media-controls></mt-media-controls>
+
+                                <div class="row media-list" ng-controller="mediaListCtrl">
+
+                                    <div class="col-sm-6 col-md-3 media-item" ng-repeat="item in media.list">
+
+                                        <a href="#" class="thumbnail" ng-click="media.mediaClick($event, $index)">
+                                            <img ng-src="{{item.Media.ImageLowResolution.Url}}">
+                                        </a>
+
+                                        <!--
+                                        <div class="media-content">
+                                            <span class="glyphicon {{media.getIconByType(item.ItemType)}}"></span>
+                                            <span class="glyphicon glyphicon-heart"></span>
+                                            <span class="glyphicon glyphicon-comment"></span>
+                                        </div><!-- /.media-content -->
+
+                                    </div>
+
+                                </div><!-- /.media-list -->
+
+                            </div><!-- /.panel-body -->
+
+                            <div class="panel-footer">
+                                <div ng-controller="mediaPaginationCtrl">
+                                    <pagination
+                                            total-items="paginator.totalMedia"
+                                            page="paginator.page"
+                                            items-per-page="paginator.pageSize"
+                                            max-size="paginator.groupSize"
+                                            on-select-page="paginator.pageClick(page)"
+                                            class="pagination-sm"
+                                            boundary-links="true"
+                                            rotate="false"></pagination>
+                                </div>
+                            </div>
+
+                        </div><!-- /.panel[ng-controller="mediaCtrl"] -->
+
+                    </div>
+                </div>
+
+            </div>
+        </script>
+
+        <script type="text/ng-template" id="template/mt-media-controls.html">
+            <form class="form-inline" role="form">
+
+                <div class="row">
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <!--<label for="orderBy">Order by</label>-->
+                            <select id="orderBy" class="form-control" ng-model="controls.orderBy" ng-change="controls.orderChange()">
+                                <option value="CreateDate desc">Most Recent</option>
+                                <option value="CreateDate asc">Oldest</option>
+                                <option value="CountOfLikes desc">Most popular</option>
+                                <option value="CountOfComments desc">Most commented</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="pageSize">Items per page:</label>
+                            <select id="pageSize" class="form-control" ng-model="controls.pageSize" ng-change="controls.pageSizeChange()">
+                                <option value="8">8</option>
+                                <option value="12">12</option>
+                                <option value="24">24</option>
+                                <option value="48">48</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input id="searchBy" type="text" class="form-control" placeholder="Username or name" ng-model="controls.search">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" ng-click="controls.searchClick($event)">
+                                <span class="glyphicon glyphicon-search"></span>
+                            </button>
+                        </span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
+        </script>
+
+        <script type="text/ng-template" id="template/media-detail.html">
+            <div class="media-detail">
+                <div class="modal-body" ng-switch on="mediaDetail.selected.ItemType">
+                    <div ng-switch-when="image">
+                        <mt-media-image url="mediaDetail.selected.Media.ImageLowResolution.Url"></mt-media-image>
+                    </div>
+                    <div ng-switch-when="video">
+                        <mt-media-video
+                                url="mediaDetail.selected.Media.VideoLowResolution.Url"
+                                img="mediaDetail.selected.Media.ImageLowResolution.Url"></mt-media-video>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+
+                    <div class="btn-group">
+                        <button
+                                type="button"
+                                class="btn btn-primary"
+                                ng-click="mediaDetail.statusClick($event, 0)">{{mediaDetail.statuses[0].Status.Name}}</button>
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li ng-repeat="item in mediaDetail.statuses">
+                                <a href="#" ng-click="mediaDetail.statusClick($event, $index)">{{item.Status.Name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button class="btn btn-warning" ng-click="mediaDetail.cancelClick()">Cancel</button>
+
+                </div>
+            </div>
+        </script>
+
+        <script type="text/ng-template" id="template/mt-media-image.html">
+            <img ng-src="{{url}}" class="img-overlay" />
+        </script>
+
+        <script type="text/ng-template" id="template/mt-media-video.html">
+            <video mt-poster="{{img}}" controls="controls">
+                <source ng-src="{{url}}" type="video/mp4" />
+            </video>
+        </script>
+
+        <script type="text/ng-template" id="template/users.html">
+            <div class="users">
+
+                <h1>
+                    <span class="glyphicon glyphicon-user"></span>
+                    Users
+                </h1>
+
+                <div class="row">
+                    <div class="col-sm-3 col-md-4">LEFT</div>
+                    <div class="col-sm-9 col-md-8">MAIN</div>
+                </div>
+
+            </div>
+        </script>
+
+        <!-- UI-Bootstrap templates -->
+        <script type="text/ng-template" id="template/pagination/pagination.html">
+            <ul class="pagination">
+                <li ng-if="boundaryLinks" ng-class="{disabled: noPrevious()}"><a href ng-click="selectPage(1)">{{getText('first')}}</a></li>
+                <li ng-if="directionLinks" ng-class="{disabled: noPrevious()}"><a href ng-click="selectPage(page - 1)">{{getText('previous')}}</a></li>
+                <li ng-repeat="page in pages track by $index" ng-class="{active: page.active, disabled: page.disabled}"><a href ng-click="selectPage(page.number)">{{page.text}}</a></li>
+                <li ng-if="directionLinks" ng-class="{disabled: noNext()}"><a href ng-click="selectPage(page + 1)">{{getText('next')}}</a></li>
+                <li ng-if="boundaryLinks" ng-class="{disabled: noNext()}"><a href ng-click="selectPage(totalPages)">{{getText('last')}}</a></li>
+            </ul>
+        </script>
+
+        <script data-main="build/js/main" src="bower_components/requirejs/require.js"></script>
+        <!--<script src="dist/scripts.min.js"></script>-->
+
+    </body>
+</html>

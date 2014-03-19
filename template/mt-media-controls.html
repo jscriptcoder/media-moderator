@@ -1,0 +1,44 @@
+<form class="form-inline" role="form">
+
+    <div class="row">
+
+        <div class="col-md-4">
+            <div class="form-group">
+                <!--<label for="orderBy">Order by</label>-->
+                <select id="orderBy" class="form-control" ng-model="controls.orderBy" ng-change="controls.orderChange()">
+                    <option value="CreateDate desc">Most Recent</option>
+                    <option value="CreateDate asc">Oldest</option>
+                    <option value="CountOfLikes desc">Most popular</option>
+                    <option value="CountOfComments desc">Most commented</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="pageSize">Items per page:</label>
+                <select id="pageSize" class="form-control" ng-model="controls.pageSize" ng-change="controls.pageSizeChange()">
+                    <option value="8">8</option>
+                    <option value="12">12</option>
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-group">
+                <div class="input-group">
+                    <input id="searchBy" type="text" class="form-control" placeholder="Username or name" ng-model="controls.search">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="controls.searchClick($event)">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</form>

@@ -1,0 +1,24 @@
+{
+  "name": "media-moderator",
+  "version": "0.1.0",
+  "main": "build/js/main.js",
+  "authors": [
+    "jscriptcoder <'jscriptcoder@gmail.com'>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "devDependencies": {
+    "angular": "~1.2.14",
+    "requirejs": "~2.1.11",
+    "bootstrap": "~3.1.1",
+    "angular-bootstrap": "~0.10.0",
+    "almond": "~0.2.9",
+    "angular-ui-router": "~0.2.9",
+    "video.js": "~4.3.0",
+    "jasmine": "~2.0.0"
+  }
+}

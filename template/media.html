@@ -1,0 +1,61 @@
+<div class="media">
+
+    <h1>
+        <span class="glyphicon glyphicon-camera"></span>
+        Media
+    </h1>
+
+    <div class="row">
+        <div class="col-sm-3 col-md-4">
+
+            <mt-status-list></mt-status-list>
+
+        </div>
+        <div class="col-sm-9 col-md-8">
+
+            <div class="panel panel-primary">
+                <div class="panel-body">
+
+                    <mt-media-controls></mt-media-controls>
+
+                    <div class="row media-list" ng-controller="mediaListCtrl">
+
+                        <div class="col-sm-6 col-md-3 media-item" ng-repeat="item in media.list">
+
+                            <a href="#" class="thumbnail" ng-click="media.mediaClick($event, $index)">
+                                <img ng-src="{{item.Media.ImageLowResolution.Url}}">
+                            </a>
+
+                            <!--
+                            <div class="media-content">
+                                <span class="glyphicon {{media.getIconByType(item.ItemType)}}"></span>
+                                <span class="glyphicon glyphicon-heart"></span>
+                                <span class="glyphicon glyphicon-comment"></span>
+                            </div><!-- /.media-content -->
+
+                        </div>
+
+                    </div><!-- /.media-list -->
+
+                </div><!-- /.panel-body -->
+
+                <div class="panel-footer">
+                    <div ng-controller="mediaPaginationCtrl">
+                        <pagination
+                                total-items="paginator.totalMedia"
+                                page="paginator.page"
+                                items-per-page="paginator.pageSize"
+                                max-size="paginator.groupSize"
+                                on-select-page="paginator.pageClick(page)"
+                                class="pagination-sm"
+                                boundary-links="true"
+                                rotate="false"></pagination>
+                    </div>
+                </div>
+
+            </div><!-- /.panel[ng-controller="mediaCtrl"] -->
+
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,34 @@
+<div class="media-detail">
+    <div class="modal-body" ng-switch on="mediaDetail.selected.ItemType">
+        <div ng-switch-when="image">
+            <mt-media-image url="mediaDetail.selected.Media.ImageLowResolution.Url"></mt-media-image>
+        </div>
+        <div ng-switch-when="video">
+            <mt-media-video
+                    url="mediaDetail.selected.Media.VideoLowResolution.Url"
+                    img="mediaDetail.selected.Media.ImageLowResolution.Url"></mt-media-video>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+
+        <div class="btn-group">
+            <button
+                    type="button"
+                    class="btn btn-primary"
+                    ng-click="mediaDetail.statusClick($event, 0)">{{mediaDetail.statuses[0].Status.Name}}</button>
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li ng-repeat="item in mediaDetail.statuses">
+                    <a href="#" ng-click="mediaDetail.statusClick($event, $index)">{{item.Status.Name}}</a>
+                </li>
+            </ul>
+        </div>
+
+        <button class="btn btn-warning" ng-click="mediaDetail.cancelClick()">Cancel</button>
+
+    </div>
+</div>
