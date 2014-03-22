@@ -45,6 +45,8 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         MediaPaginationCtrl.prototype.__listen__ = function () {
             this.__scope__.$on('statusChange', this.__statusChange__.bind(this));
             this.__scope__.$on('pageSizeChange', this.__pageSizeChange__.bind(this));
+            this.__scope__.$on('totalMediaChange', this.__totalMediaChange__.bind(this));
+            this.__scope__.$on('pageExternalChange', this.__pageExternalChange__.bind(this));
         };
 
         /**
@@ -55,7 +57,7 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaPaginationCtrl.prototype.__statusChange__ = function (e, statusId, numMedia) {
-            console.log('MediaPaginationCtrl has heard of change of total media', numMedia);
+            console.log('MediaPaginationCtrl has heard of change of total media to', numMedia);
             this.totalMedia = numMedia;
             this.page = 1;
         };
@@ -68,17 +70,32 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaPaginationCtrl.prototype.__pageSizeChange__ = function (e, pageSize) {
-            console.log('MediaPaginationCtrl has heard of a change of page size', pageSize);
+            console.log('MediaPaginationCtrl has heard of a change of page size to', pageSize);
             this.pageSize = pageSize;
+        };
+
+        /**
+        * It's triggered when the total of media changes
+        * @event
+        * @param {Event} e
+        * @param {Number} numMedia
+        * @private
+        */
+        MediaPaginationCtrl.prototype.__totalMediaChange__ = function (e, numMedia) {
+            console.log('MediaPaginationCtrl has heard of a change of total media to', numMedia);
+            this.totalMedia = numMedia;
         };
 
         /**
         * Watches external page changes
         * @event
+        * @param {Event} e
         * @param {Number} page
+        * @private
         */
-        MediaPaginationCtrl.prototype.__pageChange__ = function (val) {
-            this.page = val;
+        MediaPaginationCtrl.prototype.__pageExternalChange__ = function (e, page) {
+            console.log('MediaPaginationCtrl has heard of a external change of page to', page);
+            this.page = page;
         };
 
         /**

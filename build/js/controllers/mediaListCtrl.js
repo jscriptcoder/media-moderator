@@ -88,7 +88,9 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
 
             console.log('requesting media with', params);
 
-            this.__mediaWebserv__.get({ params: params }).then(this.__mediaSuccess__.bind(this)).catch(this.__mediaError__.bind(this));
+            var promise = this.__mediaWebserv__.get({ params: params });
+
+            promise.then(this.__mediaSuccess__.bind(this)).catch(this.__mediaError__.bind(this));
         };
 
         /**
@@ -119,8 +121,11 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaCtrl.prototype.__statusChange__ = function (e, statusId) {
-            console.log('MediaCtrl has heard of a change of status', statusId);
+            console.log('MediaCtrl has heard of a change of status to', statusId);
+
             this.statusId = statusId;
+            this.page = 1;
+
             if (this.__readyToRequest__())
                 this.__request__();
         };
@@ -133,7 +138,7 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaCtrl.prototype.__orderChange__ = function (e, orderId) {
-            console.log('MediaCtrl has heard of a chage of order', orderId);
+            console.log('MediaCtrl has heard of a chage of order to', orderId);
             this.orderId = orderId;
             if (this.__readyToRequest__())
                 this.__request__();
@@ -147,7 +152,7 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaCtrl.prototype.__pageSizeChange__ = function (e, pageSize) {
-            console.log('MediaCtrl has heard of a change of page size', pageSize);
+            console.log('MediaCtrl has heard of a change of page size to', pageSize);
             this.pageSize = pageSize;
             if (this.__readyToRequest__())
                 this.__request__();
@@ -161,7 +166,7 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaCtrl.prototype.__newSearch__ = function (e, search) {
-            console.log('MediaCtrl has heard of a new search', search);
+            console.log('MediaCtrl has heard of a new search:', search);
             this.search = search;
             if (this.__readyToRequest__())
                 this.__request__();
@@ -175,7 +180,7 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaCtrl.prototype.__pageChange__ = function (e, page) {
-            console.log('MediaCtrl has heard of a page change', page);
+            console.log('MediaCtrl has heard of a page change to', page);
             this.page = page;
             if (this.__readyToRequest__())
                 this.__request__();
@@ -210,15 +215,17 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         */
         MediaCtrl.prototype.mediaClick = function (e, idx) {
             e.preventDefault();
-            console.log('media clicked on: ', this.list[idx]);
+            console.log('media clicked on:', this.list[idx]);
 
             this.selected = idx;
 
-            this.__$modal__.open({
+            var $modalInstance = this.__$modal__.open({
                 templateUrl: 'media-detail.html',
                 controller: 'mediaDetailCtrl',
                 scope: this.__scope__
-            }).result.then(this.__onMediaDetailClose__.bind(this));
+            });
+
+            $modalInstance.result.then(this.__onMediaDetailClose__.bind(this));
         };
 
         /**
@@ -228,10 +235,27 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaCtrl.prototype.__onMediaDetailClose__ = function (result) {
-            // let's update status counts
-            result.status.Count++;
+            var media = result.media, newStatus = result.status, curStatus = this.statuses.filter(function (val) {
+                return (val.Status.Id === media.StatusId);
+            })[0];
 
-            this.__request__();
+            // let's update status counts
+            newStatus.Count++;
+            curStatus.Count--;
+
+            this.__$rootScope__.$broadcast('totalMediaChange', curStatus.Count);
+
+            if (this.list.length > 1) {
+                // there are still media in this page
+                this.__request__();
+            } else if (this.page > 1) {
+                // no media left in this page, let's go to the previous one
+                this.__$rootScope__.$broadcast('pageExternalChange', --this.page);
+                this.__request__();
+            } else {
+                // last media with current status. Let's remove it from the list
+                this.list.pop();
+            }
         };
 
         /**
@@ -251,7 +275,83 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @public
         */
         MediaCtrl.prototype.getIconByType = function (item) {
-            return item === 'image' ? 'glyphicon-picture' : 'glyphicon-facetime-video';
+            return item === 'image' ? Config.clsIcoPicture : Config.clsIcoVideo;
+        };
+
+        /**
+        * Builds the url that link to the user based on the username
+        * @type String
+        * @public
+        */
+        MediaCtrl.prototype.getUserUrl = function (username) {
+            return Config.urlProvider + username;
+        };
+
+        /**
+        * Returns some extra information about the media items
+        * @param {Object} item
+        * @returns Object
+        * @public
+        */
+        MediaCtrl.prototype.getItemExtraInfo = function (item) {
+            var status = item.StatusId, $extra = {};
+
+            switch (status) {
+                case 1:
+                    $extra.clsStatus1 = Config.clsIcoStatuses[$extra.status1Id = 2];
+                    $extra.clsStatus2 = Config.clsIcoStatuses[$extra.status2Id = 3];
+                    break;
+                case 2:
+                    $extra.clsStatus1 = Config.clsIcoStatuses[$extra.status1Id = 1];
+                    $extra.clsStatus2 = Config.clsIcoStatuses[$extra.status2Id = 3];
+                    break;
+                case 3:
+                    $extra.clsStatus1 = Config.clsIcoStatuses[$extra.status1Id = 2];
+                    $extra.clsStatus2 = Config.clsIcoStatuses[$extra.status2Id = 1];
+                    break;
+            }
+
+            return $extra;
+        };
+
+        /**
+        * Happens when the user clicks on a status change
+        * @event
+        * @param {Number} mediaId
+        * @param {Number} statusId
+        * @public
+        */
+        MediaCtrl.prototype.statusClick = function (mediaId, statusId) {
+            var _this = this;
+            var promise = this.__mediaWebserv__.setStatus({
+                id: mediaId,
+                statusId: statusId
+            });
+
+            promise.then(function (resp) {
+                _this.__statusSuccess__(resp, status);
+            }).catch(this.__statusError__.bind(this));
+        };
+
+        /**
+        * Gets triggered when we have a response from the server
+        * @param {Object} resp
+        * @param {Object} status
+        * @event
+        */
+        MediaCtrl.prototype.__statusSuccess__ = function (resp, status) {
+            console.log('got response: ', resp);
+            if (resp.status === 200) {
+                // TODO
+            }
+        };
+
+        /**
+        * Gets triggered when something when wrong in the server
+        * @event
+        */
+        MediaCtrl.prototype.__statusError__ = function () {
+            console.error('there was an error trying to set the status');
         };
         MediaCtrl.$inject = [
             '$scope',

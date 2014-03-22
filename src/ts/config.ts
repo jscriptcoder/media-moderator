@@ -50,3 +50,31 @@ export var pageGroupSize = 5;
  * @type Number
  */
 export var firstPage = 1;
+
+/**
+ * Icon class for pictures
+ * @type String
+ */
+export var clsIcoPicture = 'glyphicon-picture';
+
+/**
+ * Icon class for videos
+ * @type String
+ */
+export var clsIcoVideo = 'glyphicon-facetime-video';
+
+/**
+ * URL to the media provider (Facebook, Instagram, Flickr, etc...)
+ * @type String
+ */
+export var urlProvider = 'http://instagram.com/';
+
+/**
+ * Mapping statusId and class. Not the best way but it does the job since it'll never change
+ * @type String
+ */
+export var clsIcoStatuses = {
+    1: 'glyphicon-question-sign', // Pending
+    2: 'glyphicon-ok-sign', // Approved
+    3: 'glyphicon-remove-sign' // Rejected
+}

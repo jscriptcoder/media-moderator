@@ -1,21 +1,98 @@
 @import "base";
 
 //-- General --//
-body              { padding-top: 70px; }
-h1                { margin-bottom: 20px; }
+body { padding-top: 70px; }
+h1 { margin-bottom: 20px; }
 
 //-- Media section --//
 .media {
 
-  .media-list     { margin-top: 15px; }
-  .pagination     { margin: 0; }
+    .media-list { margin-top: 15px; }
+
+    .media-header a {
+
+        color: @link-color;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+
+        &:hover { background: none; }
+    }
+
+    .thumbnail {
+        position: relative;
+
+        .checkbox,
+        .status1,
+        .status2 {
+            display: none;
+            position: absolute;
+            margin: 0;
+            padding: 0.4em;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            font-size: 1.5em;
+            top: initial;
+        }
+
+        .checkbox {
+            border-top-right-radius: 0;
+            right: 0;
+        }
+
+        .status { cursor: pointer; }
+
+        .status1 {
+            border-bottom-left-radius: 0;
+            left: 0;
+            bottom: 0;
+        }
+
+        .status2 {
+            border-bottom-right-radius: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        &:hover .checkbox,
+        &:hover .status1,
+        &:hover .status2,
+        .checkbox.glyphicon-check { display: block; }
+
+        .glyphicon-play {
+            font-size: 2em;
+            width: 2em;
+            height: 2em;
+            color: white;
+            position: absolute;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1em;
+            border: 3px solid white;
+            padding-top: 0.4em;
+            padding-left: 0.4em;
+            top: 50%;
+            left: 50%;
+            margin-top: -1em;
+            margin-left: -1em;
+        }
+
+        .glyphicon-ok-sign { color: @brand-success; }
+        .glyphicon-question-sign { color: @brand-warning; }
+        .glyphicon-remove-sign { color: @brand-danger; }
+
+        img { cursor: pointer; }
+    }
+
+    .pagination { margin: 0; }
 
 }
 
 //-- Media Detail overlay --//
 .media-detail {
 
-  img, video      { width: 100%; }
-  .dropdown-menu  { text-align: left; }
+    img,
+    video { width: 100%; }
+    .dropdown-menu { text-align: left; }
 
 }

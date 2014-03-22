@@ -50,4 +50,32 @@ define(["require", "exports"], function(require, exports) {
     * @type Number
     */
     exports.firstPage = 1;
+
+    /**
+    * Icon class for pictures
+    * @type String
+    */
+    exports.clsIcoPicture = 'glyphicon-picture';
+
+    /**
+    * Icon class for videos
+    * @type String
+    */
+    exports.clsIcoVideo = 'glyphicon-facetime-video';
+
+    /**
+    * URL to the media provider (Facebook, Instagram, Flickr, etc...)
+    * @type String
+    */
+    exports.urlProvider = 'http://instagram.com/';
+
+    /**
+    * Mapping statusId and class. Not the best way but it does the job since it'll never change
+    * @type String
+    */
+    exports.clsIcoStatuses = {
+        1: 'glyphicon-question-sign',
+        2: 'glyphicon-ok-sign',
+        3: 'glyphicon-remove-sign'
+    };
 });

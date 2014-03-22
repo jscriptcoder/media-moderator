@@ -63,6 +63,8 @@ class MediaPaginationCtrl extends BaseCtrl {
     __listen__() {
         this.__scope__.$on('statusChange', this.__statusChange__.bind(this));
         this.__scope__.$on('pageSizeChange', this.__pageSizeChange__.bind(this));
+        this.__scope__.$on('totalMediaChange', this.__totalMediaChange__.bind(this));
+        this.__scope__.$on('pageExternalChange', this.__pageExternalChange__.bind(this));
     }
 
     /**
@@ -73,7 +75,7 @@ class MediaPaginationCtrl extends BaseCtrl {
      * @private
      */
     __statusChange__(e, statusId, numMedia) {
-        console.log('MediaPaginationCtrl has heard of change of total media', numMedia);
+        console.log('MediaPaginationCtrl has heard of change of total media to', numMedia);
         this.totalMedia = numMedia;
         this.page = 1;
     }
@@ -86,17 +88,32 @@ class MediaPaginationCtrl extends BaseCtrl {
      * @private
      */
     __pageSizeChange__(e, pageSize) {
-        console.log('MediaPaginationCtrl has heard of a change of page size', pageSize);
+        console.log('MediaPaginationCtrl has heard of a change of page size to', pageSize);
         this.pageSize = pageSize;
+    }
+
+    /**
+     * It's triggered when the total of media changes
+     * @event
+     * @param {Event} e
+     * @param {Number} numMedia
+     * @private
+     */
+    __totalMediaChange__(e, numMedia) {
+        console.log('MediaPaginationCtrl has heard of a change of total media to', numMedia);
+        this.totalMedia = numMedia;
     }
 
     /**
      * Watches external page changes
      * @event
+     * @param {Event} e
      * @param {Number} page
+     * @private
      */
-    __pageChange__(val) {
-        this.page = val;
+    __pageExternalChange__(e, page) {
+        console.log('MediaPaginationCtrl has heard of a external change of page to', page);
+        this.page = page;
     }
 
     /**

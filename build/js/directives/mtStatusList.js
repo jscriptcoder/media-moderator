@@ -58,7 +58,9 @@ define(["require", "exports", './baseDir'], function(require, exports, BaseDir) 
             this.link = function (scope, iElement, iAttrs) {
                 _this.__bridgeScope__(scope, 'status');
 
-                _this.__statusWebserv__.get().then(_this.__statusSuccess__.bind(_this)).catch(_this.__statusError__.bind(_this));
+                var promise = _this.__statusWebserv__.get();
+
+                promise.then(_this.__statusSuccess__.bind(_this)).catch(_this.__statusError__.bind(_this));
             };
 
             this.__$rootScope__ = $rootScope;

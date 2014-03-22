@@ -50,12 +50,14 @@ define(["require", "exports", './baseCtrl'], function(require, exports, BaseCtrl
         */
         MediaDetailCtrl.prototype.statusClick = function (e, idx) {
             var _this = this;
-            var status = this.statuses[idx], data = 'id=' + this.selected.Id + '&statusId=' + status.Status.Id;
+            var status = this.statuses[idx];
 
-            this.__mediaWebserv__.setStatus({
+            var promise = this.__mediaWebserv__.setStatus({
                 id: this.selected.Id,
                 statusId: status.Status.Id
-            }).then(function (resp) {
+            });
+
+            promise.then(function (resp) {
                 _this.__statusSuccess__(resp, status);
             }).catch(this.__statusError__.bind(this));
         };

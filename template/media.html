@@ -20,18 +20,32 @@
 
                     <div class="row media-list" ng-controller="mediaListCtrl">
 
-                        <div class="col-sm-6 col-md-3 media-item" ng-repeat="item in media.list">
+                        <div class="col-sm-6 col-md-3 media-item" ng-repeat="item in media.list" ng-init="$extra = media.getItemExtraInfo(item)">
 
-                            <a href="#" class="thumbnail" ng-click="media.mediaClick($event, $index)">
-                                <img ng-src="{{item.Media.ImageLowResolution.Url}}">
-                            </a>
+                            <div class="media-header">
+                                <a
+                                        title="{{item.UserModerated.UserName}}"
+                                        ng-href="{{media.getUserUrl(item.UserModerated.UserName)}}"
+                                        target="_blank">{{item.UserModerated.UserName}}</a>
+                            </div>
 
-                            <!--
-                            <div class="media-content">
-                                <span class="glyphicon {{media.getIconByType(item.ItemType)}}"></span>
-                                <span class="glyphicon glyphicon-heart"></span>
-                                <span class="glyphicon glyphicon-comment"></span>
-                            </div><!-- /.media-content -->
+                            <div class="thumbnail" >
+
+                                <div
+                                        class="checkbox glyphicon"
+                                        ng-class="{'glyphicon-unchecked': !item.checked, 'glyphicon-check': item.checked}"
+                                        ng-click="item.checked = !item.checked"></div>
+
+                                <div class="glyphicon glyphicon-play" ng-if="item.ItemType == 'video'"></div>
+
+                                <img
+                                        ng-src="{{item.Media.ImageLowResolution.Url}}"
+                                        ng-click="media.mediaClick($event, $index)" />
+
+                                <div class="status status1 glyphicon {{$extra.clsStatus1}}" ng-click="media.statusClick(item.Id, $extra.status1Id)"></div>
+                                <div class="status status2 glyphicon {{$extra.clsStatus2}}" ng-click="media.statusClick(item.Id, $extra.status2Id)"></div>
+
+                            </div>
 
                         </div>
 

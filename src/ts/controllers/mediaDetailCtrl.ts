@@ -77,14 +77,15 @@ class MediaDetailCtrl extends BaseCtrl {
      * @public
      */
     statusClick(e, idx) {
-        var status = this.statuses[idx],
-            data = 'id=' + this.selected.Id + '&statusId=' + status.Status.Id;
+        var status = this.statuses[idx];
 
 
-        this.__mediaWebserv__.setStatus({
+        var promise = this.__mediaWebserv__.setStatus({
             id: this.selected.Id,
             statusId: status.Status.Id
-        })
+        });
+
+        promise
             .then((resp) => { this.__statusSuccess__(resp, status) })
             .catch(this.__statusError__.bind(this))
     }
