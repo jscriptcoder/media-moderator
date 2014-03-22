@@ -70,7 +70,7 @@ export var clsIcoVideo = 'glyphicon-facetime-video';
 export var urlProvider = 'http://instagram.com/';
 
 /**
- * Mapping statusId and class. Not the best way but it does the job since it'll never change
+ * Mapping statusId and class
  * @type String
  */
 export var clsIcoStatuses = {
