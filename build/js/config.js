@@ -73,9 +73,9 @@ define(["require", "exports"], function(require, exports) {
     * Mapping statusId and class. Not the best way but it does the job since it'll never change
     * @type String
     */
-    exports.clsIcoStatuses = {
-        1: 'glyphicon-question-sign',
-        2: 'glyphicon-ok-sign',
-        3: 'glyphicon-remove-sign'
+    exports.clsStatuses = {
+        1: { ico: 'glyphicon-question-sign', button: 'btn-warning' },
+        2: { ico: 'glyphicon-ok-sign', button: 'btn-success' },
+        3: { ico: 'glyphicon-remove-sign', button: 'btn-danger' }
     };
 });

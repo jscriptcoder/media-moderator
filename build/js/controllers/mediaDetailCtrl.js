@@ -8,18 +8,16 @@ define(["require", "exports", './baseCtrl'], function(require, exports, BaseCtrl
     /**
     * @cass MediaDetailCtrl
     * @extends BaseCtrl
-    * @requires services/MediaWebserv
+    * @requires boostrap-ui/$modalInstance
     */
     var MediaDetailCtrl = (function (_super) {
         __extends(MediaDetailCtrl, _super);
         /**
         * @param {ng.IScope} $scope
-        * @param {ng.IScope} $rootScope
         * @param {bootstrap.ModalInstance} $modalInstance
-        * @param {services/MediaWebserv} mediaWebserv
         * @constructor
         */
-        function MediaDetailCtrl($scope, $rootScope, $modalInstance, mediaWebserv) {
+        function MediaDetailCtrl($scope, $modalInstance) {
             var _this = this;
             _super.call(this, $scope, 'mediaDetail');
             /**
@@ -28,9 +26,7 @@ define(["require", "exports", './baseCtrl'], function(require, exports, BaseCtrl
             */
             this.statuses = [];
 
-            this.__$rootScope__ = $rootScope;
             this.__$modalInstance__ = $modalInstance;
-            this.__mediaWebserv__ = mediaWebserv;
 
             // filters out the current status
             $scope.media.statuses.forEach(function (val, idx) {
@@ -49,41 +45,12 @@ define(["require", "exports", './baseCtrl'], function(require, exports, BaseCtrl
         * @public
         */
         MediaDetailCtrl.prototype.statusClick = function (e, idx) {
-            var _this = this;
             var status = this.statuses[idx];
 
-            var promise = this.__mediaWebserv__.setStatus({
-                id: this.selected.Id,
+            this.__$modalInstance__.close({
+                media: this.selected,
                 statusId: status.Status.Id
             });
-
-            promise.then(function (resp) {
-                _this.__statusSuccess__(resp, status);
-            }).catch(this.__statusError__.bind(this));
-        };
-
-        /**
-        * Gets triggered when we have a response from the server
-        * @param {Object} resp
-        * @param {Object} status
-        * @event
-        */
-        MediaDetailCtrl.prototype.__statusSuccess__ = function (resp, status) {
-            console.log('got response: ', resp);
-            if (resp.status === 200) {
-                this.__$modalInstance__.close({
-                    media: this.selected,
-                    status: status
-                });
-            }
-        };
-
-        /**
-        * Gets triggered when something when wrong in the server
-        * @event
-        */
-        MediaDetailCtrl.prototype.__statusError__ = function () {
-            console.error('there was an error trying to set the status');
         };
 
         /**
@@ -96,9 +63,7 @@ define(["require", "exports", './baseCtrl'], function(require, exports, BaseCtrl
         };
         MediaDetailCtrl.$inject = [
             '$scope',
-            '$rootScope',
-            '$modalInstance',
-            'mediaWebserv'
+            '$modalInstance'
         ];
         return MediaDetailCtrl;
     })(BaseCtrl);

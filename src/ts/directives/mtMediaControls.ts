@@ -1,6 +1,8 @@
 import BaseDir = require('./baseDir');
 import Config = require('../config');
 
+/// <reference path="../typings/angular/angular.d.ts"/>
+
 /**
  * mt-media-controls directive. Media controls, ordering, filtering and search
  * @class MTMediaControls
@@ -54,6 +56,14 @@ class MTMediaControls extends BaseDir {
     pageSize = Config.pageSize;
 
     /**
+     * Contains info about multiselection, such as total items selected 
+     * and buttons for approval, rejection and/or pending
+     * @type Object
+     * @public
+     */
+    multiselection: any = { totalItems: 0 };
+
+    /**
      * Search query (by username or ane)
      * @type String
      * @public
@@ -79,6 +89,55 @@ class MTMediaControls extends BaseDir {
     constructor($rootScope) {
         super();
         this.__$rootScope__ = $rootScope;
+    }
+
+    /**
+     * Subscribe listeners to events
+     * @private
+     */
+    __listen__() {
+        this.__scope__.$on('multiselectedMediaClick', this.__multiselectedMediaClick__.bind(this));
+        this.__scope__.$on('statusChange', this.__statusChange__.bind(this));
+    }
+
+    /**
+     * It's triggered when the user clicks on media multiselection checkboxes
+     * @event
+     * @param {Event} e
+     * @param {Object} media
+     * @param {BetterObject} multiselected
+     * @param {Object} extraInfo
+     * @param {Object} statuses
+     * @private
+     */
+    __multiselectedMediaClick__(e, media, multiselected, extraInfo, statuses) {
+        console.log('MTMediaControls has heard of a click on multiselection', media);
+
+        // adds the statuses info only the first time
+        if (angular.isUndefined(this.multiselection.status1)) {
+            angular.extend(this.multiselection, {
+                status1: statuses[extraInfo.status1Id],
+                status2: statuses[extraInfo.status2Id]
+            });
+        }
+
+        // then update the total of items
+        this.multiselection.totalItems = multiselected.length;
+
+    }
+
+    /**
+     * It's triggered when the status changes
+     * @event
+     * @param {Event} e
+     * @param {Object} status
+     * @private
+     */
+    __statusChange__(e, status) {
+        console.log('MTMediaControls has heard of a change of status to', status);
+        delete this.multiselection.status1;
+        delete this.multiselection.status2;
+        this.multiselection.totalItems = 0;
     }
 
     /**
@@ -117,6 +176,7 @@ class MTMediaControls extends BaseDir {
      */
     link = (scope, iElement, iAttrs) => {
         this.__bridgeScope__(scope, 'controls');
+        this.__listen__();
     };
 
 }

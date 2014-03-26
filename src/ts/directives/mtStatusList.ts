@@ -1,4 +1,5 @@
 import BaseDir = require('./baseDir');
+import Config = require('../config');
 
 /**
  * @class MTStatusList
@@ -119,7 +120,9 @@ class MTStatusList extends BaseDir {
     __statusSuccess__(resp) {
         console.log('got response: ', resp);
         if (resp.status === 200 && this.__utils__.isArray(resp.data)) {
-            this.list = resp.data;
+
+            this.list = resp.data
+            this.__attachExtraInfo__(this.list);
 
             this.__$rootScope__.$broadcast('statusesReady', resp.data);
 
@@ -147,7 +150,7 @@ class MTStatusList extends BaseDir {
             this.selected = idx;
 
             var status = this.list[idx];
-            this.__$rootScope__.$broadcast('statusChange', status.Status.Id, status.Count);
+            this.__$rootScope__.$broadcast('statusChange', status);
         }
     }
 
@@ -172,6 +175,39 @@ class MTStatusList extends BaseDir {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Attaches some extra info needed for the UI and based on the status
+     * @param {Object[]} statuses
+     * @private
+     */
+    __attachExtraInfo__(statuses) {
+
+        statuses.forEach((status, idx) => {
+            var statusId = status.Status.Id;
+
+            status.extra = {
+                clsIco: Config.clsStatuses[statusId].ico,
+                clsButton: Config.clsStatuses[statusId].button
+            };
+
+            switch (statusId) {
+                case 1:
+                    status.extra.status1Id = 2;
+                    status.extra.status2Id = 3;
+                    break;
+                case 2:
+                    status.extra.status1Id = 1;
+                    status.extra.status2Id = 3;
+                    break;
+                case 3:
+                    status.extra.status1Id = 2;
+                    status.extra.status2Id = 1;
+                    break;
+            }
+
+        });
     }
 }
 

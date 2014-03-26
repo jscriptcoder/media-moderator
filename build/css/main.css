@@ -4559,6 +4559,9 @@ a.list-group-item-danger.active:focus {
     display: none !important;
   }
 }
+ng-cloak {
+  display: none !important;
+}
 body {
   padding-top: 70px;
 }

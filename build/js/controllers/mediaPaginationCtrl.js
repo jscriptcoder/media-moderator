@@ -53,12 +53,12 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * It's triggered when the status changes
         * @event
         * @param {Event} e
-        * @param {Number} statusId
+        * @param {Object} status
         * @private
         */
-        MediaPaginationCtrl.prototype.__statusChange__ = function (e, statusId, numMedia) {
-            console.log('MediaPaginationCtrl has heard of change of total media to', numMedia);
-            this.totalMedia = numMedia;
+        MediaPaginationCtrl.prototype.__statusChange__ = function (e, status) {
+            console.log('MediaPaginationCtrl has heard of change of total media to', status.Count);
+            this.totalMedia = status.Count;
             this.page = 1;
         };
 

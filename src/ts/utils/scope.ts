@@ -1,3 +1,5 @@
+/// <reference path="../typings/angular/angular.d.ts"/>
+
 /**
  * Basic functionality when there is a scope around (Controllers and Directives)
  * @class Scope

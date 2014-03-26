@@ -1,3 +1,4 @@
+/// <reference path="../typings/angular/angular.d.ts"/>
 define(["require", "exports"], function(require, exports) {
     /**
     * Basic functionality when there is a scope around (Controllers and Directives)

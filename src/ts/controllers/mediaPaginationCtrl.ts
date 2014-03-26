@@ -71,12 +71,12 @@ class MediaPaginationCtrl extends BaseCtrl {
      * It's triggered when the status changes
      * @event
      * @param {Event} e
-     * @param {Number} statusId
+     * @param {Object} status
      * @private
      */
-    __statusChange__(e, statusId, numMedia) {
-        console.log('MediaPaginationCtrl has heard of change of total media to', numMedia);
-        this.totalMedia = numMedia;
+    __statusChange__(e, status) {
+        console.log('MediaPaginationCtrl has heard of change of total media to', status.Count);
+        this.totalMedia = status.Count;
         this.page = 1;
     }
 

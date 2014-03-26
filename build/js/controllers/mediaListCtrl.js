@@ -4,13 +4,14 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", './baseCtrl', '../config'], function(require, exports, BaseCtrl, Config) {
+define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'], function(require, exports, BaseCtrl, Config, BetterObject) {
     /**
     * @cass MediaCtrl
     * @extends BaseCtrl
     * @requires ng/$rootScope
     * @requires bootstrap-ui/$modal
     * @requires services/MediaWebserv
+    * @requires utils/BetterObject
     */
     var MediaCtrl = (function (_super) {
         __extends(MediaCtrl, _super);
@@ -30,11 +31,22 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
             */
             this.list = [];
             /**
-            * list of statuses
-            * @type Object[]
+            * @type BetterObject
             * @public
             */
-            this.statuses = [];
+            this.multiselected = new BetterObject;
+            /**
+            * list of statuses
+            * @type BetterObject
+            * @public
+            */
+            this.statuses = new BetterObject;
+            /**
+            * Contains some extra info we'll need for the UI, based on the status
+            * @type Object
+            * @public
+            */
+            this.extra = {};
             /**
             * @type Number
             * @public
@@ -110,21 +122,26 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         * @private
         */
         MediaCtrl.prototype.__statusesReady__ = function (e, statuses) {
-            this.statuses = statuses;
+            var _this = this;
+            statuses.forEach(function (status) {
+                return _this.statuses.set(status.Status.Id, status);
+            });
         };
 
         /**
         * It's triggered when the status changes
         * @event
         * @param {Event} e
-        * @param {Number} statusId
+        * @param {Object} status
         * @private
         */
-        MediaCtrl.prototype.__statusChange__ = function (e, statusId) {
-            console.log('MediaCtrl has heard of a change of status to', statusId);
+        MediaCtrl.prototype.__statusChange__ = function (e, status) {
+            console.log('MediaCtrl has heard of a change of status to', status);
 
-            this.statusId = statusId;
+            this.statusId = status.Status.Id;
+            this.extra = status.extra;
             this.page = 1;
+            this.multiselected.empty();
 
             if (this.__readyToRequest__())
                 this.__request__();
@@ -229,33 +246,35 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         };
 
         /**
+        * Will change the status of this media
+        * @param {Object} media
+        * @param {Number} statusId
+        * @private
+        */
+        MediaCtrl.prototype.__changeStatus__ = function (media, statusId) {
+            var _this = this;
+            var newStatus = this.statuses[statusId], oldStatus = this.statuses[media.StatusId];
+
+            console.log('new status:', newStatus, ', old status:', oldStatus);
+
+            var promise = this.__mediaWebserv__.setStatus({
+                id: media.Id,
+                statusId: statusId
+            });
+
+            promise.then(function (resp) {
+                _this.__statusSuccess__(resp, newStatus, oldStatus);
+            }).catch(this.__statusError__.bind(this));
+        };
+
+        /**
         * This method is called when the user closes the overlay by changing the status of the media
         * @event
         * @param {Object} result
         * @private
         */
         MediaCtrl.prototype.__onMediaDetailClose__ = function (result) {
-            var media = result.media, newStatus = result.status, curStatus = this.statuses.filter(function (val) {
-                return (val.Status.Id === media.StatusId);
-            })[0];
-
-            // let's update status counts
-            newStatus.Count++;
-            curStatus.Count--;
-
-            this.__$rootScope__.$broadcast('totalMediaChange', curStatus.Count);
-
-            if (this.list.length > 1) {
-                // there are still media in this page
-                this.__request__();
-            } else if (this.page > 1) {
-                // no media left in this page, let's go to the previous one
-                this.__$rootScope__.$broadcast('pageExternalChange', --this.page);
-                this.__request__();
-            } else {
-                // last media with current status. Let's remove it from the list
-                this.list.pop();
-            }
+            this.__changeStatus__(result.media, result.statusId);
         };
 
         /**
@@ -288,61 +307,43 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         };
 
         /**
-        * Returns some extra information about the media items
-        * @param {Object} item
-        * @returns Object
-        * @public
-        */
-        MediaCtrl.prototype.getItemExtraInfo = function (item) {
-            var status = item.StatusId, $extra = {};
-
-            switch (status) {
-                case 1:
-                    $extra.clsStatus1 = Config.clsIcoStatuses[$extra.status1Id = 2];
-                    $extra.clsStatus2 = Config.clsIcoStatuses[$extra.status2Id = 3];
-                    break;
-                case 2:
-                    $extra.clsStatus1 = Config.clsIcoStatuses[$extra.status1Id = 1];
-                    $extra.clsStatus2 = Config.clsIcoStatuses[$extra.status2Id = 3];
-                    break;
-                case 3:
-                    $extra.clsStatus1 = Config.clsIcoStatuses[$extra.status1Id = 2];
-                    $extra.clsStatus2 = Config.clsIcoStatuses[$extra.status2Id = 1];
-                    break;
-            }
-
-            return $extra;
-        };
-
-        /**
         * Happens when the user clicks on a status change
         * @event
-        * @param {Number} mediaId
+        * @param {Object} media
         * @param {Number} statusId
         * @public
         */
-        MediaCtrl.prototype.statusClick = function (mediaId, statusId) {
-            var _this = this;
-            var promise = this.__mediaWebserv__.setStatus({
-                id: mediaId,
-                statusId: statusId
-            });
-
-            promise.then(function (resp) {
-                _this.__statusSuccess__(resp, status);
-            }).catch(this.__statusError__.bind(this));
+        MediaCtrl.prototype.statusClick = function (media, statusId) {
+            this.__changeStatus__(media, statusId);
         };
 
         /**
         * Gets triggered when we have a response from the server
         * @param {Object} resp
-        * @param {Object} status
+        * @param {Object} newStatus
+        * @param {Object} oldStatus
         * @event
         */
-        MediaCtrl.prototype.__statusSuccess__ = function (resp, status) {
+        MediaCtrl.prototype.__statusSuccess__ = function (resp, newStatus, oldStatus) {
             console.log('got response: ', resp);
             if (resp.status === 200) {
-                // TODO
+                // let's update status counts
+                newStatus.Count++;
+                oldStatus.Count--;
+
+                this.__$rootScope__.$broadcast('totalMediaChange', oldStatus.Count);
+
+                if (this.list.length > 1) {
+                    // there are still media in this page
+                    this.__request__();
+                } else if (this.page > 1) {
+                    // no media left in this page, let's go to the previous one
+                    this.__$rootScope__.$broadcast('pageExternalChange', --this.page);
+                    this.__request__();
+                } else {
+                    // last media with current status. Let's remove it from the list
+                    this.list.pop();
+                }
             }
         };
 
@@ -352,6 +353,26 @@ define(["require", "exports", './baseCtrl', '../config'], function(require, expo
         */
         MediaCtrl.prototype.__statusError__ = function () {
             console.error('there was an error trying to set the status');
+        };
+
+        /**
+        * Happens when the user clicks on multiselection checkbox.
+        * It'll add or remove an item from the multiselected list
+        * @event
+        * @param {Object} media
+        * @public
+        */
+        MediaCtrl.prototype.multiselectClick = function (media) {
+            media.checked = !media.checked;
+            if (media.checked) {
+                this.multiselected.set(media.Id, media);
+            } else {
+                this.multiselected.del(media.Id);
+            }
+
+            console.log('media multiselection', this.multiselected.__order__);
+
+            this.__$rootScope__.$broadcast('multiselectedMediaClick', media, this.multiselected, this.extra, this.statuses);
         };
         MediaCtrl.$inject = [
             '$scope',

@@ -4,7 +4,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", './baseDir'], function(require, exports, BaseDir) {
+define(["require", "exports", './baseDir', '../config'], function(require, exports, BaseDir, Config) {
     /**
     * @class MTStatusList
     * @extends BaseDir
@@ -76,6 +76,7 @@ define(["require", "exports", './baseDir'], function(require, exports, BaseDir) 
             console.log('got response: ', resp);
             if (resp.status === 200 && this.__utils__.isArray(resp.data)) {
                 this.list = resp.data;
+                this.__attachExtraInfo__(this.list);
 
                 this.__$rootScope__.$broadcast('statusesReady', resp.data);
 
@@ -103,7 +104,7 @@ define(["require", "exports", './baseDir'], function(require, exports, BaseDir) 
                 this.selected = idx;
 
                 var status = this.list[idx];
-                this.__$rootScope__.$broadcast('statusChange', status.Status.Id, status.Count);
+                this.__$rootScope__.$broadcast('statusChange', status);
             }
         };
 
@@ -128,6 +129,37 @@ define(["require", "exports", './baseDir'], function(require, exports, BaseDir) 
             } else {
                 return null;
             }
+        };
+
+        /**
+        * Attaches some extra info needed for the UI and based on the status
+        * @param {Object[]} statuses
+        * @private
+        */
+        MTStatusList.prototype.__attachExtraInfo__ = function (statuses) {
+            statuses.forEach(function (status, idx) {
+                var statusId = status.Status.Id;
+
+                status.extra = {
+                    clsIco: Config.clsStatuses[statusId].ico,
+                    clsButton: Config.clsStatuses[statusId].button
+                };
+
+                switch (statusId) {
+                    case 1:
+                        status.extra.status1Id = 2;
+                        status.extra.status2Id = 3;
+                        break;
+                    case 2:
+                        status.extra.status1Id = 1;
+                        status.extra.status2Id = 3;
+                        break;
+                    case 3:
+                        status.extra.status1Id = 2;
+                        status.extra.status2Id = 1;
+                        break;
+                }
+            });
         };
         MTStatusList.factory = [
             '$rootScope',

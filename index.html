@@ -20,7 +20,7 @@
             <div ng-include="'template/main.html'"></div>
         </div>
 
-        <!-- Moderation tool templates -->
+        <!-- media-moderator templates -->
         <script type="text/ng-template" id="template/main.html">
             <div class="main" role="main" ng-controller="mainCtrl">
 
@@ -43,15 +43,17 @@
         </script>
 
         <script type="text/ng-template" id="template/mt-status-list.html">
-            <div class="list-group">
-                <a href="#"
-                   class="list-group-item"
-                   ng-repeat="item in status.list"
-                   ng-click="status.statusClick($event, $index)"
-                   ng-class="{active: $index == status.selected}">
-                    <span class="badge">{{item.Count}}</span>
-                    {{item.Status.Name}}
-                </a>
+            <div class="mt-media-status">
+                <div class="list-group">
+                    <a href="#"
+                       class="list-group-item"
+                       ng-repeat="item in status.list"
+                       ng-click="status.statusClick($event, $index)"
+                       ng-class="{active: $index == status.selected}">
+                        <span class="badge">{{item.Count}}</span>
+                        {{item.Status.Name}}
+                    </a>
+                </div>
             </div>
         </script>
 
@@ -80,16 +82,30 @@
 
                                     <div class="col-sm-6 col-md-3 media-item" ng-repeat="item in media.list">
 
-                                        <a href="#" class="thumbnail" ng-click="media.mediaClick($event, $index)">
-                                            <img ng-src="{{item.Media.ImageLowResolution.Url}}">
-                                        </a>
+                                        <div class="media-header">
+                                            <a
+                                                    title="{{item.UserModerated.UserName}}"
+                                                    ng-href="{{media.getUserUrl(item.UserModerated.UserName)}}"
+                                                    target="_blank">{{item.UserModerated.UserName}}</a>
+                                        </div>
 
-                                        <!--
-                                        <div class="media-content">
-                                            <span class="glyphicon {{media.getIconByType(item.ItemType)}}"></span>
-                                            <span class="glyphicon glyphicon-heart"></span>
-                                            <span class="glyphicon glyphicon-comment"></span>
-                                        </div><!-- /.media-content -->
+                                        <div class="thumbnail" >
+
+                                            <div
+                                                    class="checkbox glyphicon"
+                                                    ng-class="{'glyphicon-unchecked': !item.checked, 'glyphicon-check': item.checked}"
+                                                    ng-click="media.multiselectClick(item)"></div>
+
+                                            <div class="glyphicon glyphicon-play" ng-if="item.ItemType == 'video'"></div>
+
+                                            <img
+                                                    ng-src="{{item.Media.ImageLowResolution.Url}}"
+                                                    ng-click="media.mediaClick($event, $index)" />
+
+                                            <div class="status status1 glyphicon {{media.statuses[media.extra.status1Id].extra.clsIco}}" ng-click="media.statusClick(item, media.extra.status1Id)"></div>
+                                            <div class="status status2 glyphicon {{media.statuses[media.extra.status2Id].extra.clsIco}}" ng-click="media.statusClick(item, media.extra.status2Id)"></div>
+
+                                        </div>
 
                                     </div>
 
@@ -120,50 +136,67 @@
         </script>
 
         <script type="text/ng-template" id="template/mt-media-controls.html">
-            <form class="form-inline" role="form">
+            <div class="mt-media-controls">
+                <form class="form-inline" role="form">
 
-                <div class="row">
+                    <div class="multiselection ng-cloak" ng-show="controls.multiselection.totalItems">
 
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <!--<label for="orderBy">Order by</label>-->
-                            <select id="orderBy" class="form-control" ng-model="controls.orderBy" ng-change="controls.orderChange()">
-                                <option value="CreateDate desc">Most Recent</option>
-                                <option value="CreateDate asc">Oldest</option>
-                                <option value="CountOfLikes desc">Most popular</option>
-                                <option value="CountOfComments desc">Most commented</option>
-                            </select>
-                        </div>
+                        <button
+                                type="button"
+                                class="btn {{controls.multiselection.status1.extra.clsButton}}"
+                                ng-click="statusClick(controls.multiselection.status1.Status.Id)">{{controls.multiselection.status1.Status.Name}}</button>
+
+                        <button
+                                type="button"
+                                class="btn {{controls.multiselection.status2.extra.clsButton}}"
+                                ng-click="statusClick(controls.multiselection.status2.Status.Id)">{{controls.multiselection.status2.Status.Name}}</button>
+
+                        Items selected: {{controls.multiselection.totalItems}}
                     </div>
 
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="pageSize">Items per page:</label>
-                            <select id="pageSize" class="form-control" ng-model="controls.pageSize" ng-change="controls.pageSizeChange()">
-                                <option value="8">8</option>
-                                <option value="12">12</option>
-                                <option value="24">24</option>
-                                <option value="48">48</option>
-                            </select>
-                        </div>
-                    </div>
+                    <div class="row">
 
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <div class="input-group">
-                                <input id="searchBy" type="text" class="form-control" placeholder="Username or name" ng-model="controls.search">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <!--<label for="orderBy">Order by</label>-->
+                                <select id="orderBy" class="form-control" ng-model="controls.orderBy" ng-change="controls.orderChange()">
+                                    <option value="CreateDate desc">Most Recent</option>
+                                    <option value="CreateDate asc">Oldest</option>
+                                    <option value="CountOfLikes desc">Most popular</option>
+                                    <option value="CountOfComments desc">Most commented</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="pageSize">Items per page:</label>
+                                <select id="pageSize" class="form-control" ng-model="controls.pageSize" ng-change="controls.pageSizeChange()">
+                                    <option value="8">8</option>
+                                    <option value="12">12</option>
+                                    <option value="24">24</option>
+                                    <option value="48">48</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input id="searchBy" type="text" class="form-control" placeholder="Username or name" ng-model="controls.search">
                         <span class="input-group-btn">
                             <button class="btn btn-default" type="button" ng-click="controls.searchClick($event)">
                                 <span class="glyphicon glyphicon-search"></span>
                             </button>
                         </span>
+                                </div>
                             </div>
                         </div>
+
                     </div>
 
-                </div>
-
-            </form>
+                </form>
+            </div>
         </script>
 
         <script type="text/ng-template" id="template/media-detail.html">
@@ -204,13 +237,17 @@
         </script>
 
         <script type="text/ng-template" id="template/mt-media-image.html">
-            <img ng-src="{{url}}" class="img-overlay" />
+            <div class="mt-media-image">
+                <img ng-src="{{url}}" class="img-overlay" />
+            </div>
         </script>
 
         <script type="text/ng-template" id="template/mt-media-video.html">
-            <video mt-poster="{{img}}" controls="controls">
-                <source ng-src="{{url}}" type="video/mp4" />
-            </video>
+            <div class="mt-media-video">
+                <video mt-poster="{{img}}" controls="controls">
+                    <source ng-src="{{url}}" type="video/mp4" />
+                </video>
+            </div>
         </script>
 
         <script type="text/ng-template" id="template/users.html">
@@ -238,6 +275,17 @@
                 <li ng-if="directionLinks" ng-class="{disabled: noNext()}"><a href ng-click="selectPage(page + 1)">{{getText('next')}}</a></li>
                 <li ng-if="boundaryLinks" ng-class="{disabled: noNext()}"><a href ng-click="selectPage(totalPages)">{{getText('last')}}</a></li>
             </ul>
+        </script>
+
+        <script type="text/ng-template" id="template/popover/popover.html">
+            <div class="popover {{placement}}" ng-class="{ in: isOpen(), fade: animation() }">
+                <div class="arrow"></div>
+
+                <div class="popover-inner">
+                    <h3 class="popover-title" ng-bind="title" ng-show="title"></h3>
+                    <div class="popover-content" ng-bind="content"></div>
+                </div>
+            </div>
         </script>
 
         <script data-main="build/js/main" src="bower_components/requirejs/require.js"></script>

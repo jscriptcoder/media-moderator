@@ -5,6 +5,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 define(["require", "exports", './baseDir', '../config'], function(require, exports, BaseDir, Config) {
+    /// <reference path="../typings/angular/angular.d.ts"/>
     /**
     * mt-media-controls directive. Media controls, ordering, filtering and search
     * @class MTMediaControls
@@ -50,6 +51,13 @@ define(["require", "exports", './baseDir', '../config'], function(require, expor
             */
             this.pageSize = Config.pageSize;
             /**
+            * Contains info about multiselection, such as total items selected
+            * and buttons for approval, rejection and/or pending
+            * @type Object
+            * @public
+            */
+            this.multiselection = { totalItems: 0 };
+            /**
             * Search query (by username or ane)
             * @type String
             * @public
@@ -64,9 +72,58 @@ define(["require", "exports", './baseDir', '../config'], function(require, expor
             */
             this.link = function (scope, iElement, iAttrs) {
                 _this.__bridgeScope__(scope, 'controls');
+                _this.__listen__();
             };
             this.__$rootScope__ = $rootScope;
         }
+        /**
+        * Subscribe listeners to events
+        * @private
+        */
+        MTMediaControls.prototype.__listen__ = function () {
+            this.__scope__.$on('multiselectedMediaClick', this.__multiselectedMediaClick__.bind(this));
+            this.__scope__.$on('statusChange', this.__statusChange__.bind(this));
+        };
+
+        /**
+        * It's triggered when the user clicks on media multiselection checkboxes
+        * @event
+        * @param {Event} e
+        * @param {Object} media
+        * @param {BetterObject} multiselected
+        * @param {Object} extraInfo
+        * @param {Object} statuses
+        * @private
+        */
+        MTMediaControls.prototype.__multiselectedMediaClick__ = function (e, media, multiselected, extraInfo, statuses) {
+            console.log('MTMediaControls has heard of a click on multiselection', media);
+
+            // adds the statuses info only the first time
+            if (angular.isUndefined(this.multiselection.status1)) {
+                angular.extend(this.multiselection, {
+                    status1: statuses[extraInfo.status1Id],
+                    status2: statuses[extraInfo.status2Id]
+                });
+            }
+
+            // then update the total of items
+            this.multiselection.totalItems = multiselected.length;
+        };
+
+        /**
+        * It's triggered when the status changes
+        * @event
+        * @param {Event} e
+        * @param {Object} status
+        * @private
+        */
+        MTMediaControls.prototype.__statusChange__ = function (e, status) {
+            console.log('MTMediaControls has heard of a change of status to', status);
+            delete this.multiselection.status1;
+            delete this.multiselection.status2;
+            this.multiselection.totalItems = 0;
+        };
+
         /**
         * Gets triggered when the user changes the order
         * @event
