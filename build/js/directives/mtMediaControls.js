@@ -83,6 +83,7 @@ define(["require", "exports", './baseDir', '../config'], function(require, expor
         MTMediaControls.prototype.__listen__ = function () {
             this.__scope__.$on('multiselectedMediaClick', this.__multiselectedMediaClick__.bind(this));
             this.__scope__.$on('statusChange', this.__statusChange__.bind(this));
+            this.__scope__.$on('statusMultiMediaChange', this.__statusMultiMediaChange__.bind(this));
         };
 
         /**
@@ -111,6 +112,16 @@ define(["require", "exports", './baseDir', '../config'], function(require, expor
         };
 
         /**
+        * Unselects all the media items, resetting "multiselection" property
+        * @private
+        */
+        MTMediaControls.prototype.__unselectAllMedia__ = function () {
+            delete this.multiselection.status1;
+            delete this.multiselection.status2;
+            this.multiselection.totalItems = 0;
+        };
+
+        /**
         * It's triggered when the status changes
         * @event
         * @param {Event} e
@@ -119,9 +130,7 @@ define(["require", "exports", './baseDir', '../config'], function(require, expor
         */
         MTMediaControls.prototype.__statusChange__ = function (e, status) {
             console.log('MTMediaControls has heard of a change of status to', status);
-            delete this.multiselection.status1;
-            delete this.multiselection.status2;
-            this.multiselection.totalItems = 0;
+            this.__unselectAllMedia__();
         };
 
         /**
@@ -149,6 +158,35 @@ define(["require", "exports", './baseDir', '../config'], function(require, expor
         MTMediaControls.prototype.searchClick = function ($event) {
             console.log('new search:', this.search);
             this.__$rootScope__.$broadcast('newSearch', this.search);
+        };
+
+        /**
+        * Gets triggered when the user clicks on the status change
+        * @param {Number} statudsId
+        * @event
+        */
+        MTMediaControls.prototype.statusClick = function (statudsId) {
+            //this.__unselectAllMedia__();
+            this.__$rootScope__.$broadcast('statusMultiMedia', statudsId);
+        };
+
+        /**
+        * Gets triggered when the user clicks on unselect all link
+        * @event
+        */
+        MTMediaControls.prototype.unselectAllClick = function () {
+            this.__unselectAllMedia__();
+            this.__$rootScope__.$broadcast('unselectAllMedia');
+        };
+
+        /**
+        * It's triggered when the status of multiselected media changes
+        * @event
+        * @private
+        */
+        MTMediaControls.prototype.__statusMultiMediaChange__ = function () {
+            console.log('MTMediaControls has heard of a change of status of multiselected media');
+            this.__unselectAllMedia__();
         };
         MTMediaControls.factory = [
             '$rootScope',

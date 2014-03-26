@@ -81,6 +81,8 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'
             this.__scope__.$on('pageSizeChange', this.__pageSizeChange__.bind(this));
             this.__scope__.$on('newSearch', this.__newSearch__.bind(this));
             this.__scope__.$on('pageChange', this.__pageChange__.bind(this));
+            this.__scope__.$on('unselectAllMedia', this.__unselectAllMedia__.bind(this));
+            this.__scope__.$on('statusMultiMedia', this.__statusMultiMedia__.bind(this));
         };
 
         /**
@@ -242,7 +244,7 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'
                 scope: this.__scope__
             });
 
-            $modalInstance.result.then(this.__onMediaDetailClose__.bind(this));
+            $modalInstance.result.then(this.__mediaDetailClose__.bind(this));
         };
 
         /**
@@ -258,12 +260,12 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'
             console.log('new status:', newStatus, ', old status:', oldStatus);
 
             var promise = this.__mediaWebserv__.setStatus({
-                id: media.Id,
-                statusId: statusId
+                Id: media.Id,
+                StatusId: statusId
             });
 
             promise.then(function (resp) {
-                _this.__statusSuccess__(resp, newStatus, oldStatus);
+                return _this.__statusSuccess__(resp, newStatus, oldStatus);
             }).catch(this.__statusError__.bind(this));
         };
 
@@ -273,7 +275,7 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'
         * @param {Object} result
         * @private
         */
-        MediaCtrl.prototype.__onMediaDetailClose__ = function (result) {
+        MediaCtrl.prototype.__mediaDetailClose__ = function (result) {
             this.__changeStatus__(result.media, result.statusId);
         };
 
@@ -322,14 +324,16 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'
         * @param {Object} resp
         * @param {Object} newStatus
         * @param {Object} oldStatus
+        * @param {Number} [howMany=1]
         * @event
         */
-        MediaCtrl.prototype.__statusSuccess__ = function (resp, newStatus, oldStatus) {
+        MediaCtrl.prototype.__statusSuccess__ = function (resp, newStatus, oldStatus, howMany) {
+            if (typeof howMany === "undefined") { howMany = 1; }
             console.log('got response: ', resp);
             if (resp.status === 200) {
                 // let's update status counts
-                newStatus.Count++;
-                oldStatus.Count--;
+                newStatus.Count += howMany;
+                oldStatus.Count -= howMany;
 
                 this.__$rootScope__.$broadcast('totalMediaChange', oldStatus.Count);
 
@@ -342,7 +346,7 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'
                     this.__request__();
                 } else {
                     // last media with current status. Let's remove it from the list
-                    this.list.pop();
+                    this.list.splice(0, howMany);
                 }
             }
         };
@@ -370,9 +374,52 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'
                 this.multiselected.del(media.Id);
             }
 
-            console.log('media multiselection', this.multiselected.__order__);
+            console.log('media multiselection', this.multiselected.__keys__);
 
             this.__$rootScope__.$broadcast('multiselectedMediaClick', media, this.multiselected, this.extra, this.statuses);
+        };
+
+        /**
+        * Unselects all the media items, resetting "multiselected" object
+        * @private
+        */
+        MediaCtrl.prototype.__unselectAllMedia__ = function () {
+            this.multiselected.forEach(function (item) {
+                return item.checked = false;
+            });
+            this.multiselected.empty();
+        };
+
+        /**
+        * Changes the status of all the selected media
+        * @param {Event} e
+        * @param {String} statusId
+        * @private
+        */
+        MediaCtrl.prototype.__statusMultiMedia__ = function (e, statusId) {
+            var _this = this;
+            var newStatus = this.statuses[statusId], oldStatus = this.statuses[this.multiselected.getByIdx(0).StatusId], ids = this.multiselected.keys();
+
+            console.log('setting status of media items', ids, 'to', statusId);
+
+            var promise = this.__mediaWebserv__.setStatusMulti({
+                Ids: ids,
+                StatusId: statusId
+            });
+
+            promise.then(function (resp) {
+                return _this.__statusSuccess__(resp, newStatus, oldStatus, ids.length);
+            }).then(function () {
+                return _this.__$rootScope__.$broadcast('statusMultiMediaChange');
+            }).catch(this.__statusError__.bind(this));
+        };
+
+        /**
+        * Processes the string of comma-separated tags comming from the server
+        * @param {String} tags
+        * @public
+        */
+        MediaCtrl.prototype.sanitizeTags = function (tags) {
         };
         MediaCtrl.$inject = [
             '$scope',

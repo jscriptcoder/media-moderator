@@ -28,6 +28,18 @@ define(["require", "exports"], function(require, exports) {
     exports.mediaApi = '/api/instagramitem';
 
     /**
+    * This one is for change of status for one media
+    * @type String
+    */
+    exports.statusChangeApi = 'api/instagramitem/put';
+
+    /**
+    * This one is for change of status for multiple media
+    * @type String
+    */
+    exports.statusChangeMultiApi = 'api/instagramitem/putinstalist';
+
+    /**
     * Order by most recent
     * @type Number
     */

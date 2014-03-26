@@ -134,6 +134,8 @@ class MediaCtrl extends BaseCtrl {
         this.__scope__.$on('pageSizeChange', this.__pageSizeChange__.bind(this));
         this.__scope__.$on('newSearch', this.__newSearch__.bind(this));
         this.__scope__.$on('pageChange', this.__pageChange__.bind(this));
+        this.__scope__.$on('unselectAllMedia', this.__unselectAllMedia__.bind(this));
+        this.__scope__.$on('statusMultiMedia', this.__statusMultiMedia__.bind(this));
     }
 
     /**
@@ -182,7 +184,7 @@ class MediaCtrl extends BaseCtrl {
      * @private
      */
     __statusesReady__(e, statuses) {
-        statuses.forEach((status) => this.statuses.set(status.Status.Id, status) );
+        statuses.forEach((status) => this.statuses.set(status.Status.Id, status));
     }
 
     /**
@@ -294,7 +296,7 @@ class MediaCtrl extends BaseCtrl {
             scope: this.__scope__
         })
 
-        $modalInstance.result.then(this.__onMediaDetailClose__.bind(this));
+        $modalInstance.result.then(this.__mediaDetailClose__.bind(this));
 
     }
 
@@ -311,13 +313,14 @@ class MediaCtrl extends BaseCtrl {
         console.log('new status:', newStatus, ', old status:', oldStatus)
 
         var promise = this.__mediaWebserv__.setStatus({
-            id: media.Id,
-            statusId: statusId
+            Id: media.Id,
+            StatusId: statusId
         });
 
         promise
-            .then((resp) => { this.__statusSuccess__(resp, newStatus, oldStatus) })
+            .then((resp) => this.__statusSuccess__(resp, newStatus, oldStatus))
             .catch(this.__statusError__.bind(this))
+        ;
 
     }
 
@@ -327,7 +330,7 @@ class MediaCtrl extends BaseCtrl {
      * @param {Object} result
      * @private
      */
-    __onMediaDetailClose__(result) {
+    __mediaDetailClose__(result) {
         this.__changeStatus__(result.media, result.statusId);        
     }
 
@@ -376,15 +379,16 @@ class MediaCtrl extends BaseCtrl {
      * @param {Object} resp
      * @param {Object} newStatus
      * @param {Object} oldStatus
+     * @param {Number} [howMany=1]
      * @event
      */
-    __statusSuccess__(resp, newStatus, oldStatus) {
+    __statusSuccess__(resp, newStatus, oldStatus, howMany = 1) {
         console.log('got response: ', resp);
         if (resp.status === 200) {
 
             // let's update status counts
-            newStatus.Count++;
-            oldStatus.Count--;
+            newStatus.Count += howMany;
+            oldStatus.Count -= howMany;
 
             this.__$rootScope__.$broadcast('totalMediaChange', oldStatus.Count);
 
@@ -397,7 +401,7 @@ class MediaCtrl extends BaseCtrl {
                 this.__request__();
             } else {
                 // last media with current status. Let's remove it from the list
-                this.list.pop();
+                this.list.splice(0, howMany);
             }
 
         }
@@ -427,9 +431,54 @@ class MediaCtrl extends BaseCtrl {
             this.multiselected.del(media.Id);
         }
         
-        console.log('media multiselection', this.multiselected.__order__);
+        console.log('media multiselection', this.multiselected.__keys__);
 
         this.__$rootScope__.$broadcast('multiselectedMediaClick', media, this.multiselected, this.extra, this.statuses);
+    }
+
+    /**
+     * Unselects all the media items, resetting "multiselected" object
+     * @private
+     */
+    __unselectAllMedia__() {
+        this.multiselected.forEach((item) => item.checked = false);
+        this.multiselected.empty();
+    }
+
+    /**
+     * Changes the status of all the selected media
+     * @param {Event} e
+     * @param {String} statusId
+     * @private
+     */
+    __statusMultiMedia__(e, statusId) {
+        var newStatus = this.statuses[statusId],
+            // let's get the old status by looking at the first element multiselected
+            oldStatus = this.statuses[this.multiselected.getByIdx(0).StatusId],
+            ids = this.multiselected.keys();
+
+        console.log('setting status of media items', ids, 'to', statusId);
+
+        var promise = this.__mediaWebserv__.setStatusMulti({
+            Ids: ids,
+            StatusId: statusId
+        });
+
+        promise
+            .then((resp) => this.__statusSuccess__(resp, newStatus, oldStatus, ids.length))
+            .then(() => this.__$rootScope__.$broadcast('statusMultiMediaChange'))
+            .catch(this.__statusError__.bind(this))
+        ;
+
+    }
+
+    /**
+     * Processes the string of comma-separated tags comming from the server
+     * @param {String} tags
+     * @public
+     */
+    sanitizeTags(tags) {
+
     }
 
 }

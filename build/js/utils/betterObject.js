@@ -17,10 +17,11 @@
             this.length = 0;
             /**
             * Will keep track of the order in which the props were added to the object
-            * @type Number
+            * by storing the keys in this array
+            * @type String[]
             * @private
             */
-            this.__order__ = [];
+            this.__keys__ = [];
             if (typeof obj === 'object')
                 this.set(obj);
         }
@@ -44,7 +45,7 @@
                 case 'number':
                 case 'string':
                     if (!(key in this)) {
-                        this.length = this.__order__.push(key);
+                        this.length = this.__keys__.push(key);
                     }
 
                     this[key] = val;
@@ -54,16 +55,35 @@
         };
 
         /**
+        * Retrieves a property by index
+        * @param {Number} idx
+        * @returns {Any}
+        * @public
+        */
+        BetterObject.prototype.getByIdx = function (idx) {
+            return this[this.__keys__[idx]];
+        };
+
+        /**
+        * Gets back the list of keys
+        * @returns {String[]}
+        * @public
+        */
+        BetterObject.prototype.keys = function () {
+            return this.__keys__;
+        };
+
+        /**
         * Deletes properties
         * @param {String} key
         * @public
         */
         BetterObject.prototype.del = function (key) {
             if (key in this) {
-                var pos = this.__order__.indexOf(key);
-                this.__order__.splice(pos, 1);
+                var pos = this.__keys__.indexOf(key);
+                this.__keys__.splice(pos, 1);
 
-                //this.length = this.__order__.length;
+                //this.length = this.__keys__.length;
                 this.length--;
                 delete this[key];
             }
@@ -76,7 +96,7 @@
         */
         BetterObject.prototype.forEach = function (fn) {
             var _this = this;
-            this.__order__.forEach(function (key, idx) {
+            this.__keys__.forEach(function (key, idx) {
                 fn(_this[key], idx);
             });
         };
@@ -87,10 +107,10 @@
         */
         BetterObject.prototype.empty = function () {
             var _this = this;
-            this.__order__.forEach(function (key) {
+            this.__keys__.forEach(function (key) {
                 return delete _this[key];
             });
-            this.__order__ = [];
+            this.__keys__ = [];
             this.length = 0;
         };
         return BetterObject;

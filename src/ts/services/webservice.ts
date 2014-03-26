@@ -55,7 +55,7 @@ class WebService {
      * @param {String} [url]
      * @public
      */
-    setApi(method, url) {
+    setApi(method, url?) {
 
         if (typeof method === 'object') {
             for (var m in method) {

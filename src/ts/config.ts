@@ -28,6 +28,18 @@ export var statusApi = '/api/status';
 export var mediaApi = '/api/instagramitem';
 
 /**
+ * This one is for change of status for one media
+ * @type String
+ */
+export var statusChangeApi = 'api/instagramitem/put';
+
+/**
+ * This one is for change of status for multiple media
+ * @type String
+ */
+export var statusChangeMultiApi = 'api/instagramitem/putinstalist';
+
+/**
  * Order by most recent
  * @type Number
  */

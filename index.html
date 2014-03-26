@@ -99,6 +99,9 @@
                                             <div class="glyphicon glyphicon-play" ng-if="item.ItemType == 'video'"></div>
 
                                             <img
+                                                    popover="{{media.sanitizeTags(item.Tags)}}"
+                                                    popover-placement="bottom"
+                                                    popover-trigger="mouseenter"
                                                     ng-src="{{item.Media.ImageLowResolution.Url}}"
                                                     ng-click="media.mediaClick($event, $index)" />
 
@@ -139,22 +142,30 @@
             <div class="mt-media-controls">
                 <form class="form-inline" role="form">
 
-                    <div class="multiselection ng-cloak" ng-show="controls.multiselection.totalItems">
+                    <div class="row multiselection ng-cloak" ng-show="controls.multiselection.totalItems">
+
+                        Items selected: <strong>{{controls.multiselection.totalItems}}</strong>
 
                         <button
                                 type="button"
-                                class="btn {{controls.multiselection.status1.extra.clsButton}}"
-                                ng-click="statusClick(controls.multiselection.status1.Status.Id)">{{controls.multiselection.status1.Status.Name}}</button>
+                                class="btn btn-link"
+                                ng-click="controls.unselectAllClick()">Unselect all</button>
 
-                        <button
-                                type="button"
-                                class="btn {{controls.multiselection.status2.extra.clsButton}}"
-                                ng-click="statusClick(controls.multiselection.status2.Status.Id)">{{controls.multiselection.status2.Status.Name}}</button>
+                        <div class="btn-group">
+                            <button
+                                    type="button"
+                                    class="btn {{controls.multiselection.status1.extra.clsButton}}"
+                                    ng-click="controls.statusClick(controls.multiselection.status1.Status.Id)">{{controls.multiselection.status1.Status.Name}}</button>
 
-                        Items selected: {{controls.multiselection.totalItems}}
+                            <button
+                                    type="button"
+                                    class="btn {{controls.multiselection.status2.extra.clsButton}}"
+                                    ng-click="controls.statusClick(controls.multiselection.status2.Status.Id)">{{controls.multiselection.status2.Status.Name}}</button>
+                        </div>
+
                     </div>
 
-                    <div class="row">
+                    <div class="row controls" ng-hide="controls.multiselection.totalItems">
 
                         <div class="col-md-4">
                             <div class="form-group">

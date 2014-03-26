@@ -18,7 +18,12 @@ define(["require", "exports", './webservice', '../config'], function(require, ex
         */
         function MediaWebserv($http) {
             _super.call(this, $http);
-            this.setApi('media', Config.mediaApi);
+
+            this.setApi({
+                media: Config.mediaApi,
+                status: Config.statusChangeApi,
+                statusMulti: Config.statusChangeMultiApi
+            });
         }
         /**
         * GET method to retrieve media depending on:
@@ -36,16 +41,28 @@ define(["require", "exports", './webservice', '../config'], function(require, ex
         /**
         * PUT method to set the status of a media
         * @param {Object} data
-        * @param {String} data.id
-        * @param {String} data.statusId
+        * @param {String} data.Id
+        * @param {String} data.StatusId
         * @returns {ng.IPromise}
         * @public
         */
         MediaWebserv.prototype.setStatus = function (data) {
-            return this.api.media('put', data, {
-                headers: {
-                    'Content-Type': 'application/json; charset=UTF-8'
-                }
+            return this.api.status('put', data, {
+                headers: { 'Content-Type': 'application/json; charset=UTF-8' }
+            });
+        };
+
+        /**
+        * PUT method to set the status of a multiple media
+        * @param {Object} data
+        * @param {String[]} data.Ids
+        * @param {String} data.StatusId
+        * @returns {ng.IPromise}
+        * @public
+        */
+        MediaWebserv.prototype.setStatusMulti = function (data) {
+            return this.api.statusMulti('put', data, {
+                headers: { 'Content-Type': 'application/json; charset=UTF-8' }
             });
         };
         return MediaWebserv;

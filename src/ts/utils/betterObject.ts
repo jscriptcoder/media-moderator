@@ -13,10 +13,11 @@ class BetterObject {
 
     /**
      * Will keep track of the order in which the props were added to the object
-     * @type Number
+     * by storing the keys in this array
+     * @type String[]
      * @private
      */
-    __order__ = [];
+    __keys__ = [];
 
     /**
      * @constructor
@@ -48,7 +49,7 @@ class BetterObject {
             case 'string':
 
                 if (!(key in this)) {
-                    this.length = this.__order__.push(key);
+                    this.length = this.__keys__.push(key);
                 }
 
                 this[key] = val;
@@ -58,15 +59,34 @@ class BetterObject {
     }
 
     /**
+     * Retrieves a property by index
+     * @param {Number} idx
+     * @returns {Any}
+     * @public
+     */
+    getByIdx(idx) {
+        return this[this.__keys__[idx]];
+    }
+
+    /**
+     * Gets back the list of keys
+     * @returns {String[]}
+     * @public
+     */
+    keys() {
+        return this.__keys__;
+    }
+
+    /**
      * Deletes properties
      * @param {String} key
      * @public
      */
     del(key) {
         if (key in this) {
-            var pos = this.__order__.indexOf(key);
-            this.__order__.splice(pos, 1);
-            //this.length = this.__order__.length;
+            var pos = this.__keys__.indexOf(key);
+            this.__keys__.splice(pos, 1);
+            //this.length = this.__keys__.length;
             this.length--;
             delete this[key];
         }
@@ -78,7 +98,7 @@ class BetterObject {
      * @public
      */
     forEach(fn) {
-        this.__order__.forEach((key, idx) => {
+        this.__keys__.forEach((key, idx) => {
             fn(this[key], idx);
         });
     }
@@ -88,8 +108,8 @@ class BetterObject {
      * @public
      */
     empty() {
-        this.__order__.forEach((key) => delete this[key]);
-        this.__order__ = [];
+        this.__keys__.forEach((key) => delete this[key]);
+        this.__keys__ = [];
         this.length = 0;
     }
 

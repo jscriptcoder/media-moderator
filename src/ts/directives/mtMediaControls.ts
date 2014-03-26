@@ -98,6 +98,7 @@ class MTMediaControls extends BaseDir {
     __listen__() {
         this.__scope__.$on('multiselectedMediaClick', this.__multiselectedMediaClick__.bind(this));
         this.__scope__.$on('statusChange', this.__statusChange__.bind(this));
+        this.__scope__.$on('statusMultiMediaChange', this.__statusMultiMediaChange__.bind(this));
     }
 
     /**
@@ -127,6 +128,16 @@ class MTMediaControls extends BaseDir {
     }
 
     /**
+     * Unselects all the media items, resetting "multiselection" property
+     * @private
+     */
+    __unselectAllMedia__() {
+        delete this.multiselection.status1;
+        delete this.multiselection.status2;
+        this.multiselection.totalItems = 0;
+    }
+
+    /**
      * It's triggered when the status changes
      * @event
      * @param {Event} e
@@ -135,9 +146,7 @@ class MTMediaControls extends BaseDir {
      */
     __statusChange__(e, status) {
         console.log('MTMediaControls has heard of a change of status to', status);
-        delete this.multiselection.status1;
-        delete this.multiselection.status2;
-        this.multiselection.totalItems = 0;
+        this.__unselectAllMedia__();
     }
 
     /**
@@ -165,6 +174,35 @@ class MTMediaControls extends BaseDir {
     searchClick($event) {
         console.log('new search:', this.search);
         this.__$rootScope__.$broadcast('newSearch', this.search);
+    }
+
+    /**
+     * Gets triggered when the user clicks on the status change
+     * @param {Number} statudsId
+     * @event
+     */
+    statusClick(statudsId) {
+        //this.__unselectAllMedia__();
+        this.__$rootScope__.$broadcast('statusMultiMedia', statudsId);
+    }
+
+    /**
+     * Gets triggered when the user clicks on unselect all link
+     * @event
+     */
+    unselectAllClick() {
+        this.__unselectAllMedia__();
+        this.__$rootScope__.$broadcast('unselectAllMedia');
+    }
+
+    /**
+     * It's triggered when the status of multiselected media changes
+     * @event
+     * @private
+     */
+    __statusMultiMediaChange__() {
+        console.log('MTMediaControls has heard of a change of status of multiselected media');
+        this.__unselectAllMedia__();
     }
 
     /**

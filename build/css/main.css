@@ -4650,6 +4650,9 @@ h1 {
 .media .pagination {
   margin: 0;
 }
+.mt-media-controls .multiselection {
+  text-align: center;
+}
 .media-detail img,
 .media-detail video {
   width: 100%;
