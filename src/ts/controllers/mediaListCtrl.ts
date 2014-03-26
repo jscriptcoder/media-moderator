@@ -1,6 +1,6 @@
 import BaseCtrl = require('./baseCtrl');
 import Config = require('../config');
-import BetterObject = require('../utils/betterObject');
+import ExtendedObject = require('../utils/extendedObject');
 
 /**
  * @cass MediaCtrl
@@ -8,7 +8,7 @@ import BetterObject = require('../utils/betterObject');
  * @requires ng/$rootScope
  * @requires bootstrap-ui/$modal
  * @requires services/MediaWebserv
- * @requires utils/BetterObject
+ * @requires utils/ExtendedObject
  */
 class MediaCtrl extends BaseCtrl {
 
@@ -38,17 +38,17 @@ class MediaCtrl extends BaseCtrl {
     selected;
 
     /**
-     * @type BetterObject
+     * @type ExtendedObject
      * @public
      */
-    multiselected = new BetterObject;
+    multiselected = new ExtendedObject;
 
     /**
      * list of statuses
-     * @type BetterObject
+     * @type ExtendedObject
      * @public
      */
-    statuses = new BetterObject;
+    statuses = new ExtendedObject;
 
     /**
      * @type Number

@@ -1,14 +1,14 @@
 ﻿define(["require", "exports"], function(require, exports) {
     /**
     * This is an "improved" version of js objects, or at least better for the purposes ;-)
-    * @class BetterObject
+    * @class ExtendedObject
     */
-    var BetterObject = (function () {
+    var ExtendedObject = (function () {
         /**
         * @constructor
         * @param {Object} [obj]
         */
-        function BetterObject(obj) {
+        function ExtendedObject(obj) {
             /**
             * Will keep track of the number of properties attached
             * @type Number
@@ -31,7 +31,7 @@
         * @param {Any} [val]
         * @public
         */
-        BetterObject.prototype.set = function (key, val) {
+        ExtendedObject.prototype.set = function (key, val) {
             switch (typeof key) {
                 case 'object':
                     for (var p in key) {
@@ -60,7 +60,7 @@
         * @returns {Any}
         * @public
         */
-        BetterObject.prototype.getByIdx = function (idx) {
+        ExtendedObject.prototype.getByIdx = function (idx) {
             return this[this.__keys__[idx]];
         };
 
@@ -69,7 +69,7 @@
         * @returns {String[]}
         * @public
         */
-        BetterObject.prototype.keys = function () {
+        ExtendedObject.prototype.keys = function () {
             return this.__keys__;
         };
 
@@ -78,7 +78,7 @@
         * @param {String} key
         * @public
         */
-        BetterObject.prototype.del = function (key) {
+        ExtendedObject.prototype.del = function (key) {
             if (key in this) {
                 var pos = this.__keys__.indexOf(key);
                 this.__keys__.splice(pos, 1);
@@ -94,7 +94,7 @@
         * @param {Function} fn
         * @public
         */
-        BetterObject.prototype.forEach = function (fn) {
+        ExtendedObject.prototype.forEach = function (fn) {
             var _this = this;
             this.__keys__.forEach(function (key, idx) {
                 fn(_this[key], idx);
@@ -105,7 +105,7 @@
         * Empties the object of properties
         * @public
         */
-        BetterObject.prototype.empty = function () {
+        ExtendedObject.prototype.empty = function () {
             var _this = this;
             this.__keys__.forEach(function (key) {
                 return delete _this[key];
@@ -113,9 +113,9 @@
             this.__keys__ = [];
             this.length = 0;
         };
-        return BetterObject;
+        return ExtendedObject;
     })();
 
     
-    return BetterObject;
+    return ExtendedObject;
 });

@@ -4,14 +4,14 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'], function(require, exports, BaseCtrl, Config, BetterObject) {
+define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObject'], function(require, exports, BaseCtrl, Config, ExtendedObject) {
     /**
     * @cass MediaCtrl
     * @extends BaseCtrl
     * @requires ng/$rootScope
     * @requires bootstrap-ui/$modal
     * @requires services/MediaWebserv
-    * @requires utils/BetterObject
+    * @requires utils/ExtendedObject
     */
     var MediaCtrl = (function (_super) {
         __extends(MediaCtrl, _super);
@@ -31,16 +31,16 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/betterObject'
             */
             this.list = [];
             /**
-            * @type BetterObject
+            * @type ExtendedObject
             * @public
             */
-            this.multiselected = new BetterObject;
+            this.multiselected = new ExtendedObject;
             /**
             * list of statuses
-            * @type BetterObject
+            * @type ExtendedObject
             * @public
             */
-            this.statuses = new BetterObject;
+            this.statuses = new ExtendedObject;
             /**
             * Contains some extra info we'll need for the UI, based on the status
             * @type Object

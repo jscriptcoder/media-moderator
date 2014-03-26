@@ -1,8 +1,8 @@
 ﻿/**
  * This is an "improved" version of js objects, or at least better for the purposes ;-)
- * @class BetterObject
+ * @class ExtendedObject
  */
-class BetterObject {
+class ExtendedObject {
 
     /**
      * Will keep track of the number of properties attached
@@ -115,4 +115,4 @@ class BetterObject {
 
 }
 
-export = BetterObject;
+export = ExtendedObject;
