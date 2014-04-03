@@ -34,13 +34,13 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
             * @type ExtendedObject
             * @public
             */
-            this.multiselected = new ExtendedObject;
+            this.multiselected = new ExtendedObject();
             /**
             * list of statuses
             * @type ExtendedObject
             * @public
             */
-            this.statuses = new ExtendedObject;
+            this.statuses = new ExtendedObject();
             /**
             * Contains some extra info we'll need for the UI, based on the status
             * @type Object
@@ -67,14 +67,28 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
             this.__$modal__ = $modal;
             this.__mediaWebserv__ = mediaWebserv;
 
+            this.__watch__();
             this.__listen__();
         }
+        /**
+        * Watches changes in the scope
+        * @private
+        */
+        MediaCtrl.prototype.__watch__ = function () {
+            var _this = this;
+            var $unwatchLoadingMask = this.__scope__.$watch('loadingMedia', function (loadingMedia) {
+                _this.loading = loadingMedia;
+                $unwatchLoadingMask();
+            });
+        };
+
         /**
         * Subscribe listeners to events
         * @private
         */
         MediaCtrl.prototype.__listen__ = function () {
             // let's subscribe to these events
+            this.__scope__.$on('beforeStatuses', this.__beforeStatuses__.bind(this));
             this.__scope__.$on('statusesReady', this.__statusesReady__.bind(this));
             this.__scope__.$on('statusChange', this.__statusChange__.bind(this));
             this.__scope__.$on('orderChange', this.__orderChange__.bind(this));
@@ -102,9 +116,19 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
 
             console.log('requesting media with', params);
 
+            this.loading.start();
+
             var promise = this.__mediaWebserv__.get({ params: params });
 
-            promise.then(this.__mediaSuccess__.bind(this)).catch(this.__mediaError__.bind(this));
+            promise.then(this.__mediaSuccess__.bind(this)).catch(this.__mediaError__.bind(this)).finally(this.__stopLoading__.bind(this));
+        };
+
+        /**
+        * Hides the loading mask
+        * @private
+        */
+        MediaCtrl.prototype.__stopLoading__ = function () {
+            this.loading.stop();
         };
 
         /**
@@ -113,7 +137,16 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
         * @private
         */
         MediaCtrl.prototype.__readyToRequest__ = function () {
-            return this.statusId !== null && this.orderId !== null && this.pageSize !== null && this.search !== null && this.page != null;
+            return this.statusId !== null && this.orderId !== null && this.pageSize !== null && this.search !== null && this.page !== null;
+        };
+
+        /**
+        * Happens before requesting statuses
+        * @event
+        * @private
+        */
+        MediaCtrl.prototype.__beforeStatuses__ = function () {
+            //this.loading.start();
         };
 
         /**
@@ -259,6 +292,8 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
 
             console.log('new status:', newStatus, ', old status:', oldStatus);
 
+            this.loading.start();
+
             var promise = this.__mediaWebserv__.setStatus({
                 Id: media.Id,
                 StatusId: statusId
@@ -266,7 +301,7 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
 
             promise.then(function (resp) {
                 return _this.__statusSuccess__(resp, newStatus, oldStatus);
-            }).catch(this.__statusError__.bind(this));
+            }).catch(this.__statusError__.bind(this)).finally(this.__stopLoading__.bind(this));
         };
 
         /**
@@ -317,6 +352,10 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
         */
         MediaCtrl.prototype.statusClick = function (media, statusId) {
             this.__changeStatus__(media, statusId);
+            if (this.multiselected.length > 0) {
+                this.__unselectAllMedia__();
+                this.__$rootScope__.$broadcast('statusMultiMediaChange');
+            }
         };
 
         /**
@@ -402,6 +441,8 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
 
             console.log('setting status of media items', ids, 'to', statusId);
 
+            this.loading.start();
+
             var promise = this.__mediaWebserv__.setStatusMulti({
                 Ids: ids,
                 StatusId: statusId
@@ -411,15 +452,17 @@ define(["require", "exports", './baseCtrl', '../config', '../utils/extendedObjec
                 return _this.__statusSuccess__(resp, newStatus, oldStatus, ids.length);
             }).then(function () {
                 return _this.__$rootScope__.$broadcast('statusMultiMediaChange');
-            }).catch(this.__statusError__.bind(this));
+            }).then(this.__unselectAllMedia__.bind(this)).catch(this.__statusError__.bind(this));
         };
 
         /**
         * Processes the string of comma-separated tags comming from the server
         * @param {String} tags
+        * @returns {String}
         * @public
         */
-        MediaCtrl.prototype.sanitizeTags = function (tags) {
+        MediaCtrl.prototype.processTags = function (tags) {
+            return tags.replace(/,$/, '');
         };
         MediaCtrl.$inject = [
             '$scope',

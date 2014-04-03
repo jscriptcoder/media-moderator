@@ -58,6 +58,8 @@ define(["require", "exports", './baseDir', '../config'], function(require, expor
             this.link = function (scope, iElement, iAttrs) {
                 _this.__bridgeScope__(scope, 'status');
 
+                _this.__$rootScope__.$broadcast('beforeStatuses');
+
                 var promise = _this.__statusWebserv__.get();
 
                 promise.then(_this.__statusSuccess__.bind(_this)).catch(_this.__statusError__.bind(_this));

@@ -10,6 +10,7 @@ import Config = require('config');
 import Utils = require('./services/utils');
 import MediaWebserv = require('./services/mediaWebserv');
 import StatusWebserv = require('./services/statusWebserv');
+import LoadingMask = require('./services/loadingMask');
 
 /**
  * @type ng.IModule
@@ -21,4 +22,5 @@ Services
     .value('utils', Utils)
     .service('mediaWebserv', MediaWebserv)
     .service('statusWebserv', StatusWebserv)
+    .service('loadingMask', LoadingMask)
 ;

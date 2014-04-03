@@ -104,6 +104,8 @@ class MTStatusList extends BaseDir {
     link = (scope, iElement, iAttrs) => {
         this.__bridgeScope__(scope, 'status');
 
+        this.__$rootScope__.$broadcast('beforeStatuses');
+
         var promise = this.__statusWebserv__.get();
 
         promise

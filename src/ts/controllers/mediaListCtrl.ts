@@ -41,14 +41,14 @@ class MediaCtrl extends BaseCtrl {
      * @type ExtendedObject
      * @public
      */
-    multiselected = new ExtendedObject;
+    multiselected = new ExtendedObject();
 
     /**
      * list of statuses
      * @type ExtendedObject
      * @public
      */
-    statuses = new ExtendedObject;
+    statuses = new ExtendedObject();
 
     /**
      * @type Number
@@ -88,6 +88,12 @@ class MediaCtrl extends BaseCtrl {
     pageSize = Config.pageSize;
 
     /**
+     * @type LoadingMask
+     * @public
+     */
+    loading;
+
+    /**
      * @type ng.IScope
      * @private
      */
@@ -119,7 +125,20 @@ class MediaCtrl extends BaseCtrl {
         this.__$modal__ = $modal;
         this.__mediaWebserv__ = mediaWebserv;
 
+        this.__watch__();
         this.__listen__();
+        
+    }
+
+    /**
+     * Watches changes in the scope
+     * @private
+     */
+    __watch__() {
+        var $unwatchLoadingMask = this.__scope__.$watch('loadingMedia', (loadingMedia) => {
+            this.loading = loadingMedia;
+            $unwatchLoadingMask();
+        });
     }
 
     /**
@@ -128,6 +147,7 @@ class MediaCtrl extends BaseCtrl {
      */
     __listen__() {
         // let's subscribe to these events
+        this.__scope__.$on('beforeStatuses', this.__beforeStatuses__.bind(this));
         this.__scope__.$on('statusesReady', this.__statusesReady__.bind(this));
         this.__scope__.$on('statusChange', this.__statusChange__.bind(this));
         this.__scope__.$on('orderChange', this.__orderChange__.bind(this));
@@ -143,25 +163,33 @@ class MediaCtrl extends BaseCtrl {
      * @private
      */
     __request__() {
-
         var params: any = {
                 $orderby: this.orderId,
                 $skip: (this.page - 1) * this.pageSize,
                 $top: this.pageSize,
-                $filter: "StatusId eq " + this.statusId// + " and ItemType eq 'video'"
+                $filter: "StatusId eq " + this.statusId
             };
 
         if (this.search) params.search = this.search;
 
         console.log('requesting media with', params);
 
+        this.loading.start();
+
         var promise = this.__mediaWebserv__.get({ params: params });
 
         promise
             .then(this.__mediaSuccess__.bind(this))
             .catch(this.__mediaError__.bind(this))
+            .finally(this.__stopLoading__.bind(this))
         ;
     }
+
+    /**
+     * Hides the loading mask
+     * @private
+     */
+    __stopLoading__() { this.loading.stop(); }
 
     /**
      * Indicates whether or not we're ready to request media
@@ -173,7 +201,16 @@ class MediaCtrl extends BaseCtrl {
             this.orderId !== null &&
             this.pageSize !== null &&
             this.search !== null &&
-            this.page != null;
+            this.page !== null;
+    }
+
+    /**
+     * Happens before requesting statuses
+     * @event
+     * @private
+     */
+    __beforeStatuses__() {
+        //this.loading.start();
     }
 
     /**
@@ -312,6 +349,8 @@ class MediaCtrl extends BaseCtrl {
 
         console.log('new status:', newStatus, ', old status:', oldStatus)
 
+        this.loading.start();
+
         var promise = this.__mediaWebserv__.setStatus({
             Id: media.Id,
             StatusId: statusId
@@ -320,6 +359,7 @@ class MediaCtrl extends BaseCtrl {
         promise
             .then((resp) => this.__statusSuccess__(resp, newStatus, oldStatus))
             .catch(this.__statusError__.bind(this))
+            .finally(this.__stopLoading__.bind(this))
         ;
 
     }
@@ -372,6 +412,10 @@ class MediaCtrl extends BaseCtrl {
      */
     statusClick(media, statusId) {
         this.__changeStatus__(media, statusId);
+        if (this.multiselected.length > 0) {
+            this.__unselectAllMedia__();
+            this.__$rootScope__.$broadcast('statusMultiMediaChange');
+        }
     }
 
     /**
@@ -459,6 +503,8 @@ class MediaCtrl extends BaseCtrl {
 
         console.log('setting status of media items', ids, 'to', statusId);
 
+        this.loading.start();
+
         var promise = this.__mediaWebserv__.setStatusMulti({
             Ids: ids,
             StatusId: statusId
@@ -467,6 +513,7 @@ class MediaCtrl extends BaseCtrl {
         promise
             .then((resp) => this.__statusSuccess__(resp, newStatus, oldStatus, ids.length))
             .then(() => this.__$rootScope__.$broadcast('statusMultiMediaChange'))
+            .then(this.__unselectAllMedia__.bind(this))
             .catch(this.__statusError__.bind(this))
         ;
 
@@ -475,10 +522,11 @@ class MediaCtrl extends BaseCtrl {
     /**
      * Processes the string of comma-separated tags comming from the server
      * @param {String} tags
+     * @returns {String}
      * @public
      */
-    sanitizeTags(tags) {
-
+    processTags(tags) {
+        return tags.replace(/,$/, '');
     }
 
 }

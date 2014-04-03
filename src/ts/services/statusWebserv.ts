@@ -1,4 +1,3 @@
-import Services = require('./../services');
 import WebService = require('./webservice');
 import Config = require('../config');
 

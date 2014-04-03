@@ -13,6 +13,7 @@ import MTMediaControls = require('./directives/mtMediaControls');
 import MTMediaImage = require('./directives/mtMediaImage');
 import MTMediaVideo = require('./directives/mtMediaVideo');
 import MTPoster = require('./directives/mtPoster');
+import MTLoadingMask = require('./directives/mtLoadingMask');
 
 
 /**
@@ -28,4 +29,5 @@ Directives
     .directive('mtMediaImage', MTMediaImage.factory)
     .directive('mtMediaVideo', MTMediaVideo.factory)
     .directive('mtPoster', MTPoster.factory)
+    .directive('mtLoadingMask', MTLoadingMask.factory)
 ;

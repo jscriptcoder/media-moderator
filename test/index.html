@@ -3,39 +3,11 @@
 <head>
     <title>.. #EFMoment - Unit Tests ::..</title>
 
-    <!-- Jasmine framework -->
-    <link rel="stylesheet" type="text/css" href="../bower_components/jasmine/jasmine.css">
-    <script type="text/javascript" src="../bower_components/jasmine/jasmine.js"></script>
-    <script type="text/javascript" src="../bower_components/jasmine/jasmine-html.js"></script>
-
-    <!-- Third party libraries -->
-    <script type="text/javascript" src="../bower_components/require/require.js"></script>
-
-    <!-- runs Jasmine tester -->
-    <script type="text/javascript">
-        require.config({
-            baseUrl: '../',
-            paths: {
-                angular: 'bower_components/angular/angular'
-            },
-            shim: { angular: { exports: 'angular' } }
-        });
-
-        require([
-
-            // Add the specs in here
-
-        ], function () {
-
-            var jasmineEnv = jasmine.getEnv(),
-                htmlReporter = new jasmine.HtmlReporter(),
-                specFilter = function (spec) { return htmlReporter.specFilter(spec); };
-
-            jasmineEnv.specFilter = specFilter;
-            jasmineEnv.addReporter(htmlReporter);
-            jasmineEnv.execute();
-        });
-    </script>
+    <!-- Jasmine -->
+    <link rel="stylesheet" type="text/css" href="../bower_components/jasmine/lib/jasmine-core/jasmine.css">
+    
+    <!-- Requirejs -->
+    <script data-main="specRunner" src="../bower_components/requirejs/require.js"></script>
 
 </head>
 

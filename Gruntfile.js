@@ -2,6 +2,7 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks('grunt-typescript');
     grunt.loadNpmTasks('grunt-contrib-less');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-express');
@@ -36,6 +37,14 @@ module.exports = function (grunt) {
                     'dist/css/styles.min.css': 'src/less/main.less'
                 }
             }
+        },
+
+        jshint: {
+            build: 'build/js/**/*.js',
+            options: {
+                '-W004': false, // "<class name> is already defined"
+                '-W093': false // "did you mean to return a conditional instead of an assignment?"
+            },
         },
 
         requirejs: {
@@ -79,6 +88,12 @@ module.exports = function (grunt) {
                 options: { livereload: true }
         	},
         	
+        	jshint: {
+        		files: 'build/js/**/*.js',
+        		tasks: 'jshint',
+                options: { livereload: true }
+        	},
+
         	less: {
         		files: 'src/less/**/*.less',
         		tasks: 'less',
@@ -95,8 +110,9 @@ module.exports = function (grunt) {
 
     grunt.registerTask('default', ['watch']);
     grunt.registerTask('ts', ['typescript']);
+    grunt.registerTask('hint', ['jshint']);
     grunt.registerTask('lss', ['less']);
-    grunt.registerTask('compile', ['typescript', 'less', 'requirejs']);
+    grunt.registerTask('compile', ['typescript', 'jshint', 'less', 'requirejs']);
     grunt.registerTask('server', ['express', 'watch']);
 
 };
